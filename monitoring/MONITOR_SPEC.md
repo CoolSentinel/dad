@@ -60,8 +60,8 @@ Dữ liệu ban đầu xuất từ dataset gốc bằng `src/dad_export.py`, n�
 
 | Collection | Loại | Số document ban đầu | Trường chính | Vòng đời / index |
 |---|---|---|---|---|
-| `telemetry_hist` | **Time Series** (`timeField: ts`, `metaField: meta`) | 32.288 | `ts`, `meta {site, inrow, sensor, clientId, ip}`, `value`, `seq`, `conn`, `puback_ms`, `src {day, frame}` | **không TTL** (dữ liệu 2019, TTL sẽ xoá ngay); index `{meta.clientId, ts}`, `{meta.inrow, ts}` |
-| `telemetry` | **Time Series** | 0 (replay ghi vào) | như trên, thời gian đã dời về hiện tại | `expireAfterSeconds: 604800` |
+| `telemetry_hist` | **Time Series** (`timeField: ts`, `metaField: meta`, `granularity: minutes`) | 32.288 | `ts`, `meta {site, inrow, sensor, clientId, ip}`, `value`, `seq`, `conn`, `puback_ms`, `src {day, frame}` | **không TTL** (dữ liệu 2019, TTL sẽ xoá ngay); index `{meta.clientId, ts}`, `{meta.inrow, ts}` |
+| `telemetry` | **Time Series** (`granularity: seconds` cho replay ×60; `minutes` nếu chạy thời gian thật) | 0 (replay ghi vào) | như trên, thời gian đã dời về hiện tại | `expireAfterSeconds: 604800` |
 | `devices` | thường, có validator | 16 | `sensor`, `valid_range_c`, `baseline_init`, `profile_dad`, `profile_real_paper`, `quality`, `rate_limited` | — |
 | `inrows` | thường | 4 | `ip`, `netbotz`, `clients`, `ntp_seen_in_capture` | — |
 | `mqtt_sessions` | thường | 112 | `conn`, `keepalive_s`, `n_publish`, `n_unacked`, `puback_p99_ms` | index `{clientId, connect_ts}` |

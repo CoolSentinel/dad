@@ -17,7 +17,11 @@ import os
 from bson import json_util
 from pymongo import ASCENDING, DESCENDING, MongoClient
 
-TS_OPTS = {"timeField": "ts", "metaField": "meta", "granularity": "seconds"}
+# granularity theo tần suất ghi (khuyến nghị của MongoDB):
+# - telemetry_hist: dữ liệu gốc 5 phút/bản tin -> "minutes" (152 bucket thay vì 2.716 với "seconds")
+# - telemetry: replay tua x60 -> 5 giây/bản tin -> "seconds". Nếu chạy đúng thời gian thật thì đổi sang "minutes".
+TS_HIST = {"timeField": "ts", "metaField": "meta", "granularity": "minutes"}
+TS_LIVE = {"timeField": "ts", "metaField": "meta", "granularity": "seconds"}
 TTL_SECONDS = 7 * 24 * 3600
 
 VALIDATORS = {
@@ -62,9 +66,9 @@ def load(uri: str, db_name: str, data_dir: str, drop: bool = True) -> dict[str, 
         existing = set()
     # Time Series: lịch sử không TTL, live có TTL
     if "telemetry_hist" not in existing:
-        db.create_collection("telemetry_hist", timeseries=TS_OPTS)
+        db.create_collection("telemetry_hist", timeseries=TS_HIST)
     if "telemetry" not in existing:
-        db.create_collection("telemetry", timeseries=TS_OPTS, expireAfterSeconds=TTL_SECONDS)
+        db.create_collection("telemetry", timeseries=TS_LIVE, expireAfterSeconds=TTL_SECONDS)
     for name, v in VALIDATORS.items():
         if name not in existing:
             db.create_collection(name, validator=v, validationLevel="strict")
