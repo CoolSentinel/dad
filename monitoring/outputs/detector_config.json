@@ -1,0 +1,70 @@
+{
+  "period_s": 300.1,
+  "detectors": {
+    "D1_silence": {
+      "scope": "client_id, gộp theo inrow",
+      "rule": "now - last_ts > 1.5 * period_s",
+      "severity": "warning",
+      "auto_remediate": true
+    },
+    "D2_burst": {
+      "scope": "client_id",
+      "rule": "gap < 0.8 * period_s và cùng kết nối (bỏ bản tin đầu của kết nối mới)",
+      "severity": "warning",
+      "auto_remediate": true
+    },
+    "D4_value_drop": {
+      "scope": "inrow",
+      "baseline": "rolling median 288 bản tin trước, theo client_id",
+      "rule": "đếm chu kỳ có mean(value - baseline) < -0.8 trong 6 chu kỳ gần nhất >= 3",
+      "severity": "critical",
+      "auto_remediate": false,
+      "needs_human_ack": true,
+      "note": "DAD: tấn công sửa cả 4 cảm biến nên gộp theo inrow; hệ thống thật nên chạy thêm theo từng cảm biến"
+    },
+    "INV_physics": {
+      "scope": "inrow",
+      "rule": "TFEU < TFSU < TAS < TAR",
+      "severity": "critical",
+      "note": "0 vi phạm trong DAD; dùng cho tình huống 1 cảm biến lẻ"
+    },
+    "RANGE": {
+      "scope": "client_id",
+      "severity": "warning",
+      "rule": "value ngoài dải đo thật 14 ngày (Table 1 bài báo), nới thêm 2 °C",
+      "ranges_c": {
+        "TAR": [
+          23.1,
+          30.1
+        ],
+        "TAS": [
+          15.9,
+          23.2
+        ],
+        "TFEU": [
+          6.1,
+          16.3
+        ],
+        "TFSU": [
+          10.8,
+          19.8
+        ]
+      }
+    },
+    "SYS_unacked": {
+      "scope": "client_id",
+      "rule": "PUBLISH không có PUBACK > 0 (bỏ qua 00:00–00:01)",
+      "severity": "info"
+    }
+  },
+  "incident": {
+    "group_by": "inrow",
+    "merge_window_min": 20,
+    "resolve_after_clean_periods": 3
+  },
+  "benchmark_on_dad": {
+    "windows": 11,
+    "D1+D2+D4_detected": 11,
+    "false_alarms_week": 0
+  }
+}
