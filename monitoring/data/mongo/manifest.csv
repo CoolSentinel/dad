@@ -1,0 +1,10 @@
+collection,documents,KB_gzip
+telemetry_hist,32288,478.9
+devices,16,1.3
+inrows,4,0.3
+mqtt_sessions,112,2.9
+traffic_daily,35,0.8
+gt_labels,544,5.9
+gt_incidents,11,0.7
+detector_config,1,0.9
+demo_scenarios,4,0.4

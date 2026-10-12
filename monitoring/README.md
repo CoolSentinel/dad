@@ -8,7 +8,28 @@ Notebook (đã chạy sẵn, có đủ bảng và biểu đồ), đọc theo th�
 - [`notebooks/02_data_mining_cho_monitor.ipynb`](notebooks/02_data_mining_cho_monitor.ipynb): khai thác sâu tầng mạng/MQTT, dấu vân tay từng loại tấn công, so sánh bộ phát hiện ở mức sự cố, xuất cấu hình cho pipeline.
 - [`notebooks/03_dao_sau_va_kiem_chung.ipynb`](notebooks/03_dao_sau_va_kiem_chung.ipynb): nghiên cứu khác đã làm gì với DAD; kiểm chứng kết quả ML của bài *Electronics* 2021 (rò nhãn); độ ổn định của ngưỡng D4; tự động điều tra sự cố; thời gian khi replay.
 
+- [`notebooks/04_tu_dataset_goc_den_mongodb.ipynb`](notebooks/04_tu_dataset_goc_den_mongodb.ipynb): xuất dataset gốc thành 9 collection MongoDB, từ điển dữ liệu từng collection, nạp vào MongoDB, chạy bộ phát hiện bằng Aggregation Pipeline và đối chiếu với pandas (khớp 100%), thử kịch bản demo tua ×60.
+
 **Đặc tả monitor chốt cho cuộc thi:** [`MONITOR_SPEC.md`](MONITOR_SPEC.md).
+
+## Đưa dữ liệu vào MongoDB
+
+Dữ liệu đã xuất sẵn ở `data/mongo/*.ndjson.gz` (9 collection, khoảng 490 KB). Cần MongoDB ≥ 7.0.
+```bash
+pip install -r requirements.txt
+python src/dad_export.py                                     # (tuỳ chọn) tạo lại từ PCAP + CSV gốc
+MONGODB_URI="mongodb+srv://<user>:<pass>@<cluster>/" python src/dad_mongo_load.py --db dad
+```
+| Collection | Số document | Nội dung |
+|---|---|---|
+| `telemetry_hist` | 32.288 | Time Series, mỗi bản tin nhiệt độ một document (không TTL) |
+| `telemetry` | 0 | Time Series live, TTL 7 ngày, cho replay |
+| `devices` / `inrows` | 16 / 4 | hồ sơ cảm biến và tủ làm mát |
+| `mqtt_sessions` | 112 | kết nối MQTT theo ngày |
+| `traffic_daily` | 35 | số gói theo ngày × IP × loại |
+| `gt_labels` / `gt_incidents` | 544 / 11 | nhãn và sự cố chuẩn (chỉ để chấm) |
+| `detector_config` / `demo_scenarios` | 1 / 4 | ngưỡng; đoạn dữ liệu cho demo |
+| `incidents` / `actions` | 0 / 0 | do hệ thống ghi khi chạy (có validator) |
 
 Dữ liệu (PCAP + nhãn) nằm sẵn ở thư mục gốc của repo `dad`; notebook đọc thẳng từ đó.
 
@@ -17,7 +38,7 @@ Dữ liệu (PCAP + nhãn) nằm sẵn ở thư mục gốc của repo `dad`; no
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-jupyter lab notebooks/
+jupyter lab notebooks/          # notebook 04 cần MongoDB (biến MONGODB_URI, mặc định localhost)
 ```
 
 Lần chạy đầu đọc PCAP mất khoảng 1 phút, sau đó dùng cache trong `data/processed`.
@@ -28,6 +49,10 @@ Lần chạy đầu đọc PCAP mất khoảng 1 phút, sau đó dùng cache tro
 src/dad_download.py   tải dữ liệu gốc
 src/dad_loader.py     đọc PCAP (scapy), ghép nhãn CSV, tạo bảng telemetry
 src/dad_mining.py     tầng mạng/MQTT, baseline, ground truth, bộ phát hiện D1/D2/D3/D4, chấm mức sự cố
+src/dad_export.py     xuất dataset gốc thành 9 collection MongoDB (data/mongo/*.ndjson.gz)
+src/dad_mongo_load.py nạp vào MongoDB: Time Series, TTL, validator, index; nạp kịch bản demo dời thời gian
+src/dad_mongo_pipelines.py  D1/D2/D4, kiểm tra vật lý, dải giá trị, điều tra bằng Aggregation Pipeline
+data/mongo/           dữ liệu MongoDB đã xuất sẵn + manifest.csv
 MONITOR_SPEC.md       đặc tả monitor, data model, runbook, kịch bản demo cho cuộc thi
 notebooks/            EDA, data mining, thông số thiết kế hệ thống
 outputs/              sensor_profile.csv, ground_truth_incidents.csv, detector_config.json

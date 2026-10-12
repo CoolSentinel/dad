@@ -26,7 +26,7 @@ Cách câu chuyện này đáp ứng các tiêu chí chấm:
 | Yêu cầu | Cách đáp ứng |
 |---|---|
 | MongoDB là nền tảng dữ liệu vận hành chính | Mọi telemetry, trạng thái thiết bị, incident, hành động khắc phục nằm trong MongoDB |
-| Mô hình dữ liệu hợp lý | Mục 4: `telemetry` (time series), `node_slots`, `devices`, `incidents`, `actions`, `ground_truth` |
+| Mô hình dữ liệu hợp lý | Mục 4: `telemetry` / `telemetry_hist` (time series), `devices`, `inrows`, `mqtt_sessions`, `incidents`, `actions`, `gt_*`; dữ liệu ban đầu có sẵn trong `data/mongo/` |
 | Aggregation Pipeline phục vụ bài toán | D1, D2, D4, bất biến vật lý và điều tra đều là pipeline (mục 4.2) |
 | *(khuyến khích)* Time Series, window functions, `expireAfterSeconds`, Change Streams | Có cả bốn |
 | Datadog: ≥ 1 dashboard | Mục 5.3 |
@@ -56,35 +56,42 @@ DAD PCAP ──► replayer (Python, tua ×60) ──MQTT QoS1──► Mosquitt
 
 ### 4.1 Collections
 
-| Collection | Loại | Trường chính | Index / vòng đời |
-|---|---|---|---|
-| `telemetry` | **Time Series** (`timeField: ts`, `metaField: meta`, `granularity: "seconds"`) | `ts` (thời điểm nhận), `device_ts`, `meta {site, inrow, sensor, clientId, conn}`, `value`, `seq` | `expireAfterSeconds: 604800` (7 ngày); index `{meta.inrow, meta.sensor, ts}` |
-| `node_slots` | thường, ghi bằng `$merge` | `{inrow, slot}`, `dev`, `neg_count6`, `n_msg`, `lost`, `extra` | TTL 7 ngày |
-| `devices` | thường | `clientId`, `inrow`, `sensor`, `baseline`, `last_seen`, `quality` (`ok`/`suspect`), `rate_limited` | — |
-| `incidents` | thường | `incident_id`, `inrow`, `status` (`open`/`ack`/`mitigated`/`resolved`), `kind[]`, `evidence {lost, extra, drop_c, sensors, first_alert}`, `detected_at`, `resolved_at`, `mttd_s`, `mttr_s` | index `{status, inrow}`; **Change Stream** cho remediator |
-| `actions` | thường | `incident_id`, `action`, `by` (`auto`/người duyệt), `at`, `result` | — |
-| `ground_truth` | thường | 11 cửa sổ sự cố (`outputs/ground_truth_incidents.csv`) | chỉ dùng để chấm, **không** dùng để phát hiện |
+Dữ liệu ban đầu xuất từ dataset gốc bằng `src/dad_export.py`, nạp bằng `src/dad_mongo_load.py`; chi tiết từng trường ở notebook 04.
+
+| Collection | Loại | Số document ban đầu | Trường chính | Vòng đời / index |
+|---|---|---|---|---|
+| `telemetry_hist` | **Time Series** (`timeField: ts`, `metaField: meta`) | 32.288 | `ts`, `meta {site, inrow, sensor, clientId, ip}`, `value`, `seq`, `conn`, `puback_ms`, `src {day, frame}` | **không TTL** (dữ liệu 2019, TTL sẽ xoá ngay); index `{meta.clientId, ts}`, `{meta.inrow, ts}` |
+| `telemetry` | **Time Series** | 0 (replay ghi vào) | như trên, thời gian đã dời về hiện tại | `expireAfterSeconds: 604800` |
+| `devices` | thường, có validator | 16 | `sensor`, `valid_range_c`, `baseline_init`, `profile_dad`, `profile_real_paper`, `quality`, `rate_limited` | — |
+| `inrows` | thường | 4 | `ip`, `netbotz`, `clients`, `ntp_seen_in_capture` | — |
+| `mqtt_sessions` | thường | 112 | `conn`, `keepalive_s`, `n_publish`, `n_unacked`, `puback_p99_ms` | index `{clientId, connect_ts}` |
+| `traffic_daily` | thường | 35 | số gói theo ngày × IP × loại | — |
+| `incidents` | thường, có validator | 0 | `inrow`, `status` (`open`/`ack`/`mitigated`/`resolved`), `kinds[]`, `evidence {lost, extra, drop_c, sensors}`, `detected_at`, `resolved_at` | index `{status, inrow}`; **Change Stream** cho remediator |
+| `actions` | thường, có validator | 0 | `incident_id`, `action`, `by`, `at`, `result` | — |
+| `gt_labels`, `gt_incidents` | thường | 544, 11 | nhãn gốc và 11 cửa sổ sự cố kèm kết quả điều tra | chỉ dùng để chấm, **không** cho bộ phát hiện đọc |
+| `detector_config`, `demo_scenarios` | thường | 1, 4 | ngưỡng; đoạn dữ liệu cho demo | — |
 
 ### 4.2 Pipeline phát hiện
 
-Các pipeline này là bản viết lại bằng MongoDB của logic đã chạy bằng pandas trong `src/dad_mining.py`; **chưa chạy thử trên MongoDB**.
+Code ở `src/dad_mongo_pipelines.py`. **Đã chạy thật trên MongoDB 8.0.4 với toàn bộ `telemetry_hist`** (notebook 04): D1 = 64, D2 = 248, D4 theo InRow = 85 slot, D4 theo cảm biến = 497, vật lý = 0, dải = 0; tất cả **trùng khớp** pandas. Pipeline điều tra khớp cả 11 sự cố. Mỗi pipeline chạy dưới 1 giây.
 
-**D1 im lặng và D2 gửi dồn**, theo từng cảm biến:
+**D1 im lặng và D2 gửi dồn**, theo từng cảm biến (`conn` nằm ngoài `meta`):
 
 ```js
 db.telemetry.aggregate([
-  { $match: { ts: { $gte: new Date(Date.now() - 10 * P * 1000) } } },
   { $setWindowFields: { partitionBy: "$meta.clientId", sortBy: { ts: 1 },
-      output: { prevTs: { $shift: { output: "$ts", by: -1 } }, prevConn: { $shift: { output: "$meta.conn", by: -1 } } } } },
-  { $set: { gapP: { $divide: [{ $dateDiff: { startDate: "$prevTs", endDate: "$ts", unit: "millisecond" } }, P * 1000] } } },
-  { $match: { $or: [ { gapP: { $gt: 1.5 } },                                         // D1 (bắt sau khi bản tin tới)
-                     { $expr: { $and: [ { $lt: ["$gapP", 0.8] }, { $eq: ["$meta.conn", "$prevConn"] } ] } } ] } }   // D2
+      output: { prevTs: { $shift: { output: "$ts", by: -1 } }, prevConn: { $shift: { output: "$conn", by: -1 } } } } },
+  { $match: { prevTs: { $ne: null } } },
+  { $set: { gapP: { $divide: [{ $dateDiff: { startDate: "$prevTs", endDate: "$ts", unit: "millisecond" } }, P * 1000] },
+            sameConn: { $eq: ["$conn", "$prevConn"] } } },
+  { $match: { $or: [ { gapP: { $gt: 1.5 } },                        // D1 (bắt khi bản tin kế tiếp tới)
+                     { gapP: { $lt: 0.8 }, sameConn: true } ] } }   // D2
 ])
 ```
 
-D1 còn phải bắt **lúc đang im lặng**, không chờ bản tin kế tiếp tới. Worker so `now − devices.last_seen` với `1,5 × P`, gom theo InRow: cả 4 cảm biến cùng im là **một** sự cố của node.
+**D1 live** (`silence_now`): mỗi chu kỳ, lấy lần nhận cuối của từng cảm biến, tính `(now − lastTs) / P`, gom theo InRow. Đã thử ở tốc độ ×60: InRow 13 báo 4/4 cảm biến im lúc 1,6P, các InRow khác không báo.
 
-**D4 giá trị thấp bất thường:** baseline = trung vị 288 bản tin trước của từng cảm biến; báo khi ≥ 3/6 chu kỳ gần nhất lệch dưới −0,8 °C. Pipeline đầy đủ ở notebook 02, mục 6.1 (`$median` trong `$setWindowFields` cần MongoDB ≥ 7.0). Chạy **hai mức**:
+**D4 giá trị thấp bất thường:** baseline = trung vị 288 bản tin trước của từng cảm biến; báo khi ≥ 3/6 chu kỳ gần nhất lệch dưới −0,8 °C. Pipeline `d4_node` / `d4_sensor` (`$median` trong `$setWindowFields` cần MongoDB ≥ 7.0). **Bắt buộc chặn `null` bằng `$isNumber`**: trong MQL `null` nhỏ hơn mọi số, thiếu điều kiện này D4 báo 176 slot thay vì 85. Chạy **hai mức**:
 - theo từng cảm biến → **warning** (sớm hơn, trễ 3–25 phút, 1 báo giả/tuần);
 - gộp theo InRow → **critical** (trễ 10–28 phút, 0 báo giả).
 
@@ -107,7 +114,8 @@ D1 còn phải bắt **lúc đang im lặng**, không chờ bản tin kế tiế
 - `kind` = chặn gói / chèn gói / sửa giá trị (notebook 03, mục 5).
 
 ### 4.3 Bẫy khi replay
-- **Làm nóng baseline:** D4 cần 288 bản tin của mỗi cảm biến. Nạp trước **thứ Hai** (ngày sạch) thẳng vào MongoDB, rồi mới replay đoạn có sự cố.
+- **Làm nóng baseline:** D4 cần 288 bản tin của mỗi cảm biến. Nạp trước **thứ Hai** (ngày sạch), rồi mới replay đoạn có sự cố. `dad_mongo_load.load_scenario()` làm sẵn việc này (dời thời gian về hiện tại, nén ×60) và đã thử: D2 báo sau 1,5 giây, D4 sau khoảng 15 giây, D1 live sau 8 giây.
+- **TTL xoá dữ liệu lịch sử:** chép dữ liệu 2019 vào collection có `expireAfterSeconds` thì bị xoá ngay (đã thử: 500 document mất sau 2 giây). Dữ liệu lịch sử để ở `telemetry_hist` (không TTL); chỉ dữ liệu đã dời thời gian mới vào `telemetry`.
 - Lưu mọi thời điểm theo **UTC**. File DAD chia theo giờ Tây Ban Nha, và ngày 27/10/2019 có đổi giờ.
 - **Bỏ qua khung reconnect 00:00–00:02** mỗi ngày: có reconnect, RST, và vài bản tin của phiên cũ không được ACK.
 
