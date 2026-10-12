@@ -147,6 +147,9 @@ def evaluate(alarm: pd.DataFrame, gt: pd.DataFrame, margin: str = "15min", merge
     Trả về (bảng sự kiện, Series độ trễ phút theo từng cửa sổ ground truth).
     """
     m = pd.Timedelta(margin)
+    if alarm.empty:
+        return (pd.DataFrame(columns=["inrow", "start", "end", "n", "dung"]).astype({"dung": bool}),
+                pd.Series(np.nan, index=gt.index))
     a = alarm.sort_values(["inrow", "t"])
     new = (a.groupby("inrow").t.diff() > pd.Timedelta(merge)) | (a.inrow != a.inrow.shift())
     ev = a.assign(e=new.cumsum()).groupby("e").agg(inrow=("inrow", "first"), start=("t", "min"),

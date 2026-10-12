@@ -6,6 +6,9 @@ Notebook (đã chạy sẵn, có đủ bảng và biểu đồ), đọc theo th�
 - [`notebooks/00_hieu_dataset_DAD.ipynb`](notebooks/00_hieu_dataset_DAD.ipynb): **bắt đầu ở đây nếu chưa biết DAD**. Giải thích bối cảnh data center, 4 loại cảm biến, cách tạo dữ liệu, từng loại file (PCAP, CSV, XML), MQTT, ý nghĩa từng cột, 3 kiểu tấn công và những chỗ dễ hiểu nhầm.
 - [`notebooks/01_dad_eda_va_thiet_ke_monitoring.ipynb`](notebooks/01_dad_eda_va_thiet_ke_monitoring.ipynb): EDA và đề xuất thiết kế ban đầu.
 - [`notebooks/02_data_mining_cho_monitor.ipynb`](notebooks/02_data_mining_cho_monitor.ipynb): khai thác sâu tầng mạng/MQTT, dấu vân tay từng loại tấn công, so sánh bộ phát hiện ở mức sự cố, xuất cấu hình cho pipeline.
+- [`notebooks/03_dao_sau_va_kiem_chung.ipynb`](notebooks/03_dao_sau_va_kiem_chung.ipynb): nghiên cứu khác đã làm gì với DAD; kiểm chứng kết quả ML của bài *Electronics* 2021 (rò nhãn); độ ổn định của ngưỡng D4; tự động điều tra sự cố; thời gian khi replay.
+
+**Đặc tả monitor chốt cho cuộc thi:** [`MONITOR_SPEC.md`](MONITOR_SPEC.md).
 
 Dữ liệu (PCAP + nhãn) nằm sẵn ở thư mục gốc của repo `dad`; notebook đọc thẳng từ đó.
 
@@ -25,6 +28,7 @@ Lần chạy đầu đọc PCAP mất khoảng 1 phút, sau đó dùng cache tro
 src/dad_download.py   tải dữ liệu gốc
 src/dad_loader.py     đọc PCAP (scapy), ghép nhãn CSV, tạo bảng telemetry
 src/dad_mining.py     tầng mạng/MQTT, baseline, ground truth, bộ phát hiện D1/D2/D3/D4, chấm mức sự cố
+MONITOR_SPEC.md       đặc tả monitor, data model, runbook, kịch bản demo cho cuộc thi
 notebooks/            EDA, data mining, thông số thiết kế hệ thống
 outputs/              sensor_profile.csv, ground_truth_incidents.csv, detector_config.json
 data/processed/       cache, không commit
