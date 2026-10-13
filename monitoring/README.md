@@ -12,6 +12,8 @@ Notebook (đã chạy sẵn, có đủ bảng và biểu đồ), đọc theo th�
 
 **Đặc tả monitor chốt cho cuộc thi:** [`MONITOR_SPEC.md`](MONITOR_SPEC.md).
 
+**Chưa có kinh nghiệm vận hành? Đọc trước:** [`HUONG_TRIEN_KHAI.md`](HUONG_TRIEN_KHAI.md): cách nghĩ về bài toán, nghiệp vụ xử lý sự cố ngoài đời, kế hoạch build 17–31/10, chia việc, rủi ro.
+
 ## Đưa dữ liệu vào MongoDB
 
 Dữ liệu đã xuất sẵn ở `data/mongo/*.ndjson.gz` (9 collection, khoảng 490 KB). Cần MongoDB ≥ 7.0.
