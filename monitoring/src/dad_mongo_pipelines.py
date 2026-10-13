@@ -152,3 +152,54 @@ def silence_now(now: datetime, P: float = P_DEFAULT, factor: float = 1.5, lookba
         {"$project": {"_id": 0, "inrow": "$_id", "maxSilenceP": {"$round": ["$maxSilenceP", 2]}, "silentSensors": 1}},
         {"$sort": {"inrow": 1}},
     ]
+
+
+def cooling_kpis(slot_s: float = 300, ashrae=(18.0, 27.0), match: dict | None = None) -> list[dict]:
+    """Chỉ số vận hành làm mát theo InRow và slot (dùng cho dashboard phòng máy).
+
+    dT_air   = TAR - TAS   : nhiệt IT thải ra mà tủ phải lấy đi (≈ 6,3–7,3 °C trong DAD)
+    dT_water = TFSU - TFEU : nhiệt nước nhận được qua dàn ống (≈ 3,7–4,1 °C)
+    approach = TAS - TFEU  : khí cấp còn ấm hơn nước vào bao nhiêu (≈ 8,1–8,9 °C); tăng dần = dàn ống kém đi
+    ratio    = dT_air / dT_water : cân bằng nhiệt khí–nước, rất ổn định (std ≈ 0,01–0,02) -> lệch = nghi 1 cảm biến hỏng
+    ashrae_ok: TAS trong vùng khuyến nghị ASHRAE 18–27 °C
+    """
+    pick = lambda s: {"$avg": {"$cond": [{"$eq": ["$meta.sensor", s]}, "$value", None]}}
+    return [
+        {"$match": match or {}},
+        {"$group": {"_id": {"inrow": "$meta.inrow", "slot": {"$dateTrunc": {"date": "$ts", "unit": "millisecond", "binSize": int(slot_s * 1000)}}},
+                    "TFEU": pick("TFEU"), "TFSU": pick("TFSU"), "TAS": pick("TAS"), "TAR": pick("TAR")}},
+        {"$match": {"TFEU": {"$ne": None}, "TFSU": {"$ne": None}, "TAS": {"$ne": None}, "TAR": {"$ne": None}}},
+        {"$set": {"dT_air": {"$subtract": ["$TAR", "$TAS"]}, "dT_water": {"$subtract": ["$TFSU", "$TFEU"]},
+                  "approach": {"$subtract": ["$TAS", "$TFEU"]}}},
+        {"$set": {"ratio": {"$cond": [{"$gt": ["$dT_water", 0]}, {"$divide": ["$dT_air", "$dT_water"]}, None]},
+                  "ashrae_ok": {"$and": [{"$gte": ["$TAS", ashrae[0]]}, {"$lte": ["$TAS", ashrae[1]]}]}}},
+        {"$project": {"_id": 0, "inrow": "$_id.inrow", "slot": "$_id.slot", "TFEU": 1, "TFSU": 1, "TAS": 1, "TAR": 1,
+                      "dT_air": 1, "dT_water": 1, "approach": 1, "ratio": 1, "ashrae_ok": 1}},
+        {"$sort": {"inrow": 1, "slot": 1}},
+    ]
+
+
+def stuck_sensor(n: int = 12, match: dict | None = None) -> list[dict]:
+    """Cảm biến 'đứng giá trị': n bản tin liên tiếp cùng một giá trị (DAD bình thường dài nhất 4; n = 12 là 1 giờ)."""
+    return [
+        {"$match": match or {}},
+        {"$setWindowFields": {"partitionBy": "$meta.clientId", "sortBy": {"ts": 1}, "output": {
+            "vmin": {"$min": "$value", "window": {"documents": [-(n - 1), 0]}},
+            "vmax": {"$max": "$value", "window": {"documents": [-(n - 1), 0]}},
+            "cnt": {"$count": {}, "window": {"documents": [-(n - 1), 0]}}}}},
+        {"$match": {"$expr": {"$and": [{"$eq": ["$cnt", n]}, {"$eq": ["$vmin", "$vmax"]}]}}},
+        {"$project": {"_id": 0, "ts": 1, "clientId": "$meta.clientId", "value": 1}},
+    ]
+
+
+def change_window(window_s: float = 900, limit_c: float = 5.0, sensor: str = "TAS", match: dict | None = None) -> list[dict]:
+    """ASHRAE: (max - min) nhiệt độ khí đầu vào trong cửa sổ 15 phút không quá 5 °C (1 giờ: 20 °C)."""
+    return [
+        {"$match": {**(match or {}), "meta.sensor": sensor}},
+        {"$setWindowFields": {"partitionBy": "$meta.clientId", "sortBy": {"ts": 1}, "output": {
+            "vmin": {"$min": "$value", "window": {"range": [-window_s, 0], "unit": "second"}},
+            "vmax": {"$max": "$value", "window": {"range": [-window_s, 0], "unit": "second"}}}}},
+        {"$set": {"swing": {"$subtract": ["$vmax", "$vmin"]}}},
+        {"$match": {"swing": {"$gt": limit_c}}},
+        {"$project": {"_id": 0, "ts": 1, "clientId": "$meta.clientId", "swing": 1}},
+    ]
