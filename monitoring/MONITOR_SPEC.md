@@ -153,8 +153,10 @@ Tag chung: `env`, `site`, `inrow`, `sensor`, `client_id`.
 | M5 | **Vi phạm vật lý** | `sum(last_5m):sum:dad.invariant.violations{*} by {inrow}.as_count()` + `dad.range.violations` | > 0 | P1 | 02 §2, §7.2 |
 | M6 | **Ingest chậm / pipeline lỗi** | `avg(last_5m):avg:dad.ingest.lag_seconds{*}` hoặc log `service:ingest status:error` | lag > 2P; lỗi > 0 | P2 | để phân biệt sự cố hạ tầng với sự cố dữ liệu |
 | M7 | *(năng lực bổ sung)* **Anomaly Detection** | `avg(last_15m):anomalies(sum:dad.msg.count{*}.as_count(), 'basic', 2)` | theo mô hình Datadog | P3 | lưu lượng bản tin toàn site lệch khỏi mẫu |
+| M8 | **Khí cấp ngoài vùng ASHRAE** | `min(last_30m):avg:dad.temp{sensor:tas} by {inrow}` < 18 hoặc `max(...)` > 27 | ngoài 18–27 °C → warn; ngoài 15–32 °C → alert | P1/P2 | ASHRAE TC 9.9; `NGHIEP_VU_GIAM_SAT.md` §2.1 |
 
 - Nội dung cảnh báo nên chứa `{{inrow.name}}`, link dashboard lọc sẵn theo InRow, và `incident_id`. Worker gửi Datadog **Event** khi mở/đóng incident, để event hiện trên dashboard.
+- **Cảnh báo gộp theo tủ thành sự cố**, không bắn theo từng bản tin. Trên DAD, bắn thô cho tới 41 cảnh báo trong 10 phút ("lụt" theo EEMUA 191); gộp lại còn 2,6 sự cố/ngày. Danh mục cảnh báo đầy đủ (nguyên nhân, hậu quả, hành động, thời gian phản ứng, điều kiện phục hồi) ở `NGHIEP_VU_GIAM_SAT.md` §4.3.
 - **Không** dùng làm monitor: thay đổi `keepalive` theo ngày, độ lệch của InRow 13 so với InRow 15/23, `msgid`. Đây là dấu vết của bộ sinh dữ liệu (02 §1.2, §7.3), không phải tín hiệu tấn công.
 
 ### 5.3 Dashboard (một màn hình)

@@ -203,3 +203,44 @@ def change_window(window_s: float = 900, limit_c: float = 5.0, sensor: str = "TA
         {"$match": {"swing": {"$gt": limit_c}}},
         {"$project": {"_id": 0, "ts": 1, "clientId": "$meta.clientId", "swing": 1}},
     ]
+
+
+def rci(rec=(18.0, 27.0), allow=(15.0, 32.0), sensor: str = "TAS", group_unit: str = "day", match: dict | None = None) -> list[dict]:
+    """Rack Cooling Index (Herrlin 2005) trên nhiệt độ khí cấp, theo InRow và theo ngày (UTC).
+
+    RCI_HI = 100 * (1 - Σ(T - max_rec | T > max_rec) / ((max_all - max_rec) * n));  RCI_LO tương tự ở biên dưới.
+    100% = lý tưởng, ≥ 95% tốt, < 90% kém. DAD không có cảm biến đầu vào rack, nên dùng TAS làm đại diện.
+    """
+    lo_r, hi_r = rec
+    lo_a, hi_a = allow
+    return [
+        {"$match": {**(match or {}), "meta.sensor": sensor}},
+        {"$group": {"_id": {"inrow": "$meta.inrow", "period": {"$dateTrunc": {"date": "$ts", "unit": group_unit}}},
+                    "n": {"$sum": 1},
+                    "over": {"$sum": {"$cond": [{"$gt": ["$value", hi_r]}, {"$subtract": ["$value", hi_r]}, 0]}},
+                    "under": {"$sum": {"$cond": [{"$lt": ["$value", lo_r]}, {"$subtract": [lo_r, "$value"]}, 0]}},
+                    "outside_allowable": {"$sum": {"$cond": [{"$or": [{"$lt": ["$value", lo_a]}, {"$gt": ["$value", hi_a]}]}, 1, 0]}}}},
+        {"$project": {"_id": 0, "inrow": "$_id.inrow", "period": "$_id.period", "n": 1, "outside_allowable": 1,
+                      "RCI_HI": {"$round": [{"$multiply": [100, {"$subtract": [1, {"$divide": ["$over", {"$multiply": [hi_a - hi_r, "$n"]}]}]}]}, 2]},
+                      "RCI_LO": {"$round": [{"$multiply": [100, {"$subtract": [1, {"$divide": ["$under", {"$multiply": [lo_r - lo_a, "$n"]}]}]}]}, 2]}}},
+        {"$sort": {"inrow": 1, "period": 1}},
+    ]
+
+
+def completeness(slot_s: float = 300, expected_per_day: int = 288, match: dict | None = None) -> list[dict]:
+    """Độ đầy đủ theo SỐ Ô THỜI GIAN có dữ liệu (không đếm bản tin): bản tin chèn thêm không bù được ô bị mất.
+
+    DAD InRow 13 thứ Sáu: đếm bản tin cho 100%, đếm ô 5 phút cho 94,8%.
+    """
+    return [
+        {"$match": match or {}},
+        {"$group": {"_id": {"clientId": "$meta.clientId", "inrow": "$meta.inrow",
+                            "day": {"$dateTrunc": {"date": "$ts", "unit": "day"}},
+                            "slot": {"$dateTrunc": {"date": "$ts", "unit": "millisecond", "binSize": int(slot_s * 1000)}}},
+                    "msgs": {"$sum": 1}}},
+        {"$group": {"_id": {"clientId": "$_id.clientId", "inrow": "$_id.inrow", "day": "$_id.day"},
+                    "slots": {"$sum": 1}, "msgs": {"$sum": "$msgs"}}},
+        {"$project": {"_id": 0, "clientId": "$_id.clientId", "inrow": "$_id.inrow", "day": "$_id.day", "msgs": 1, "slots": 1,
+                      "completeness_pct": {"$round": [{"$multiply": [100, {"$divide": [{"$min": ["$slots", expected_per_day]}, expected_per_day]}]}, 1]}}},
+        {"$sort": {"clientId": 1, "day": 1}},
+    ]
