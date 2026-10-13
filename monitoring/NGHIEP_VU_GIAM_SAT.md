@@ -6,7 +6,7 @@ Tài liệu này trả lời: cảm biến gửi bao lâu một lần, theo dõi
 
 | Thông số | Giá trị | Nguồn |
 |---|---|---|
-| Chu kỳ gửi của mỗi cảm biến | **5 phút** (đo được 300,1 giây; 98% bản tin lệch dưới 1 ms) | PCAP; bài báo mục 3.1 |
+| Chu kỳ gửi của mỗi cảm biến | **5 phút** (đo được 300,1 giây; ở các tủ không bị tấn công, 99,95% khoảng cách giữa hai bản tin lệch dưới 2 ms) | PCAP; bài báo mục 3.1 |
 | Số bản tin mỗi cảm biến mỗi ngày | **288** | |
 | Toàn hệ thống (16 cảm biến) | 4.608 bản tin/ngày, khoảng **3,2 bản tin/phút** | |
 | Khi tua ×60 cho demo | mỗi cảm biến **5 giây** một lần | |
