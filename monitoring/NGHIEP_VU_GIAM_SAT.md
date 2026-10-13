@@ -204,6 +204,20 @@ ISA-101 chia màn hình vận hành thành 4 cấp, đi từ tổng quan tới c
 
 Khi gộp theo ngày bằng MongoDB (UTC), ngày đầu và ngày cuối của tập dữ liệu chỉ có một phần (file DAD chia theo giờ Tây Ban Nha), nên độ đầy đủ ở hai ngày này thấp vì bị cắt ngày, không phải vì mất dữ liệu.
 
+## 6b. Datadog đã được dùng trong lĩnh vực này chưa
+
+Tra cứu tài liệu chính thức của Datadog (10/2026):
+
+| Mảng | Datadog có gì | Áp vào bài |
+|---|---|---|
+| **Thiết bị hạ tầng vật lý qua SNMP** (Network Device Monitoring) | profile có sẵn cho **APC** (UPS), **Vertiv**, **Avtech** (cảm biến môi trường), PDU **Eaton, Raritan, CyberPower, Tripp Lite**. **Không** có profile riêng cho APC NetBotz hay tủ làm mát InRow; NetBotz dùng MIB riêng (theo Schneider), nên phải tự viết *custom profile* | DAD không có SNMP. Nêu như hướng mở rộng: thiết bị thật (NetBotz, InRow) đưa vào Datadog bằng custom SNMP profile |
+| **IoT / thiết bị biên** | *Edge Device Monitoring* (trước là IoT Agent); tích hợp Azure IoT Hub / IoT Edge, AWS IoT, Google Cloud IoT; gộp metric theo tag, host map cho cả đội thiết bị | cách làm phổ biến là **metric tuỳ biến qua DogStatsD/API, gắn tag** theo thiết bị, đúng như thiết kế `dad.*` với tag `inrow`, `sensor` |
+| **Broker MQTT** | tích hợp chính thức cho **EMQX** và **HiveMQ** (số kết nối, thông lượng bản tin). **Không** có tích hợp chính thức cho Mosquitto; muốn thì chạy Prometheus exporter cho Mosquitto rồi để Agent đọc bằng OpenMetrics check | nếu muốn có metric broker "chuẩn Datadog" cho lớp 4, cân nhắc dùng **EMQX** thay Mosquitto |
+| **Trường hợp thực tế gần nhất** | **Charm Industrial** (case study của Datadog): cảm biến nhiệt độ, áp suất trên thiết bị công nghiệp; dashboard và cảnh báo theo ngưỡng an toàn; phát hiện **áp suất tăng dần trong một tháng** (tắc dần) trước khi hỏng | giống ý tưởng "approach tăng dần = cần bảo trì" (mục 2.2): giá trị của xu hướng dài hạn |
+| **Phần cứng trong data center** | *Hardware Sentry* (Marketplace): nhiệt độ, phần cứng máy chủ, dashboard theo site / phòng máy | xác nhận Datadog được dùng cho góc nhìn "theo phòng máy" |
+
+**Kết luận:** trong data center, giám sát cơ điện (làm mát, điện) thường do phần mềm DCIM/BMS chuyên dụng đảm nhận (Schneider EcoStruxure, Sunbird, Vertiv…); Datadog mạnh ở IT, ứng dụng và đường đi dữ liệu. Bài của đội đặt Datadog làm **lớp quan sát hợp nhất**: dữ liệu cảm biến (lớp 1–3) và sức khoẻ đường đi dữ liệu (lớp 4) trên **cùng một nền tảng**, liên kết bằng tag và trace. Hướng này có tiền lệ (Edge Monitoring, Charm Industrial), nhưng chưa phổ biến cho làm mát data center, nên là điểm sáng tạo hợp lý để nêu khi thuyết trình.
+
 ## 7. Nguồn
 
 - ASHRAE TC 9.9, *Thermal Guidelines for Data Processing Environments*, 5th ed., reference card, Table 2.1 và chú thích f: https://www.ashrae.org/file%20library/technical%20resources/bookstore/supplemental%20files/therm-gdlns-5th-r-e-refcard.pdf
@@ -215,3 +229,7 @@ Khi gộp theo ngày bằng MongoDB (UTC), ngày đầu và ngày cuối của t
 - Litmus, *How to Measure Industrial Data Quality: SLOs for Latency, Completeness and Freshness*: https://litmus.io/blog/how-to-measure-industrial-data-quality-slos-for-latency-completeness-and-freshness
 - Upsite, *The 4 Delta T's of Data Center Cooling*: https://www.upsite.com/blog/the-4-delta-ts-of-data-center-cooling-what-youre-missing
 - FlowCon, *Data Centers and Correct ΔT Control*: https://flowcon.com/articles/data-centers-and-correct-dt-control
+- Datadog, *Supported Devices* (Network Device Monitoring): https://docs.datadoghq.com/network_monitoring/devices/supported_devices/
+- Datadog, *Edge Monitoring*: https://www.datadoghq.com/solutions/edge-monitoring/
+- Datadog, tích hợp EMQX: https://docs.datadoghq.com/integrations/emqx/ ; HiveMQ: https://docs.datadoghq.com/integrations/hivemq/
+- Datadog case study, Charm Industrial: https://www.datadoghq.com/case-studies/charm/

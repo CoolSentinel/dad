@@ -122,7 +122,7 @@ Nguyên tắc: **cuối mỗi mốc phải có thứ chạy được để demo*
 | Câu hỏi | Đề xuất |
 |---|---|
 | Tốc độ replay | ×60 (P = 5 giây); mọi ngưỡng tính theo bội số P |
-| MQTT broker | Mosquitto trong docker compose; không cần cloud |
+| MQTT broker | Mosquitto trong docker compose (đơn giản nhất); hoặc **EMQX**, vì Datadog có tích hợp chính thức cho EMQX, nên có sẵn metric broker cho lớp hạ tầng (xem `NGHIEP_VU_GIAM_SAT.md` mục 6b) |
 | Detector chạy đâu | worker Python gọi Aggregation Pipeline mỗi P giây; MongoDB làm phần tính toán |
 | Duyệt cách ly | API `POST /incidents/{id}/approve` (thêm trang web nhỏ nếu còn thời gian) |
 | Demo truy cập được | chạy cục bộ và quay video; nếu cần link thì đẩy lên một VM nhỏ |
