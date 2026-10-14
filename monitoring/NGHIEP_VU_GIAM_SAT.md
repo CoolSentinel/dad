@@ -99,12 +99,12 @@ Google SRE: nếu chỉ đo được 4 thứ của một hệ thống, hãy đo 
 
 | Tín hiệu vàng | Chỉ số cụ thể | Ngưỡng gợi ý | Căn cứ DAD |
 |---|---|---|---|
-| **Độ trễ** (latency) | thời gian thiết bị → MongoDB (p50, p95, p99, không dùng trung bình); PUBACK broker | ingest p99 > 2P; PUBACK p99 > 5 ms | PUBACK p50 0,17 ms, p99 0,6 ms |
+| **Độ trễ** (latency) | thời gian thiết bị → MongoDB; độ trễ `POST /ingest` (APM) — p50, p95, p99, không dùng trung bình | ingest p99 > 2P | trong DAD gốc, broker xác nhận mất p50 0,17 ms, p99 0,6 ms (tham khảo) |
 | **Lưu lượng** (traffic) | bản tin/phút toàn site | lệch > 10% so với 16/P | bình thường 3,2/phút |
 | **Lỗi** (errors) | lỗi ghi MongoDB, bản tin không parse được, PUBLISH không được ACK | > 0 ngoài khung 00:00 | 20 bản tin không ACK, đều lúc 00:00 |
 | **Bão hoà** (saturation) | hàng đợi ingest; thời gian chạy 1 lượt phát hiện so với P | lượt phát hiện > 0,5P | pipeline < 1 giây trên cả tuần |
 
-Với broker và ingest, dùng thêm phương pháp **USE** (Utilisation, Saturation, Errors cho từng tài nguyên): CPU, bộ nhớ, kết nối.
+Với ingest API và MongoDB, dùng thêm phương pháp **USE** (Utilisation, Saturation, Errors cho từng tài nguyên): CPU, bộ nhớ, kết nối.
 
 ## 3. Sự cố nào, lớp nào bắt được
 
@@ -115,7 +115,7 @@ Với broker và ingest, dùng thêm phương pháp **USE** (Utilisation, Satura
 | Sửa giá trị cả tủ (DAD) | yếu (RCI_LO ≈ 98–99%) | **không** | **nhất quán (D4)** | không |
 | Một cảm biến hỏng/trôi | có thể | **có** (cân bằng nhiệt) | hợp lệ, nhất quán | không |
 | Quá nhiệt thật | **có** | **có** | không | không |
-| Ingest chậm / broker lỗi | không | không | kịp thời (cả site cùng lúc) | **có** |
+| Ingest chậm / MongoDB chậm | không | không | kịp thời (cả site cùng lúc) | **có** |
 
 ## 4. Quản lý cảnh báo (ISA-18.2 / EEMUA 191 / SRE)
 
@@ -175,7 +175,7 @@ ISA-101 chia màn hình vận hành thành 4 cấp, đi từ tổng quan tới c
 | **1. Tổng quan** | *Site Overview* | mọi người, màn hình lớn | **chỉ KPI và bất thường**: 4 ô trạng thái tủ; số sự cố đang mở; RCI hôm nay; độ đầy đủ dữ liệu 24 giờ; MTTD/MTTR gần nhất | Monitor Summary, Query Value, SLO |
 | **2. Theo khu vực** | *Cooling* và *Data Integrity* | vận hành phòng máy | TAS 4 tủ với nền 18–27 °C; ΔT khí, ΔT nước, approach; heatmap độ tươi 16 cảm biến; D4 theo tủ có vạch ngưỡng | Timeseries (có marker ngưỡng), Heatmap, Top List |
 | **3. Chi tiết tủ** | *InRow {inrow}* (template variable `$inrow`) | người đang xử lý | 4 cảm biến của tủ; cân bằng nhiệt; lịch sử sự cố và hành động; trạng thái `quality` | Timeseries, Event Timeline, Table |
-| **4. Chẩn đoán** | *Platform* và *Incident* | SRE | độ trễ ingest p50/p95/p99; PUBACK; lỗi theo service; log stream lọc `incident_id`; trace chậm nhất | Distribution, Log Stream, Trace/Service Map |
+| **4. Chẩn đoán** | *Platform* và *Incident* | SRE | độ trễ ingest p50/p95/p99 (APM); lỗi theo service; log stream lọc `incident_id`; trace chậm nhất | Distribution, Log Stream, Trace/Service Map |
 
 **Điều hướng:** mỗi ô ở cấp 1 có link sang cấp 2 hoặc 3 đã lọc sẵn. Từ cảnh báo, link thẳng tới cấp 3 của đúng tủ.
 
@@ -212,7 +212,7 @@ Tra cứu tài liệu chính thức của Datadog (10/2026):
 |---|---|---|
 | **Thiết bị hạ tầng vật lý qua SNMP** (Network Device Monitoring) | profile có sẵn cho **APC** (UPS), **Vertiv**, **Avtech** (cảm biến môi trường), PDU **Eaton, Raritan, CyberPower, Tripp Lite**. **Không** có profile riêng cho APC NetBotz hay tủ làm mát InRow; NetBotz dùng MIB riêng (theo Schneider), nên phải tự viết *custom profile* | DAD không có SNMP. Nêu như hướng mở rộng: thiết bị thật (NetBotz, InRow) đưa vào Datadog bằng custom SNMP profile |
 | **IoT / thiết bị biên** | *Edge Device Monitoring* (trước là IoT Agent); tích hợp Azure IoT Hub / IoT Edge, AWS IoT, Google Cloud IoT; gộp metric theo tag, host map cho cả đội thiết bị | cách làm phổ biến là **metric tuỳ biến qua DogStatsD/API, gắn tag** theo thiết bị, đúng như thiết kế `dad.*` với tag `inrow`, `sensor` |
-| **Broker MQTT** | tích hợp chính thức cho **EMQX** và **HiveMQ** (số kết nối, thông lượng bản tin). **Không** có tích hợp chính thức cho Mosquitto; muốn thì chạy Prometheus exporter cho Mosquitto rồi để Agent đọc bằng OpenMetrics check | nếu muốn có metric broker "chuẩn Datadog" cho lớp 4, cân nhắc dùng **EMQX** thay Mosquitto |
+| **Broker MQTT** | có tích hợp cho EMQX, HiveMQ | **không cần cho bài thi**: hệ thống dùng MongoDB làm trung tâm, không có broker (xem `MONITOR_SPEC.md` mục 3) |
 | **Trường hợp thực tế gần nhất** | **Charm Industrial** (case study của Datadog): cảm biến nhiệt độ, áp suất trên thiết bị công nghiệp; dashboard và cảnh báo theo ngưỡng an toàn; phát hiện **áp suất tăng dần trong một tháng** (tắc dần) trước khi hỏng | giống ý tưởng "approach tăng dần = cần bảo trì" (mục 2.2): giá trị của xu hướng dài hạn |
 | **Phần cứng trong data center** | *Hardware Sentry* (Marketplace): nhiệt độ, phần cứng máy chủ, dashboard theo site / phòng máy | xác nhận Datadog được dùng cho góc nhìn "theo phòng máy" |
 

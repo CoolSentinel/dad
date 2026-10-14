@@ -31,7 +31,7 @@ Trong một data center thật có hai nhóm trông hệ thống, và bài của
 | Vai trò | Họ trông cái gì | Họ cần gì từ hệ thống của đội |
 |---|---|---|
 | **Vận hành cơ điện / phòng máy** (facility, NOC) | nhiệt độ, làm mát, điện. Dùng DCIM/BMS; NetBotz trong Hình 1 của bài báo chính là loại thiết bị này | biết **tủ nào** đang có vấn đề, **nghiêm trọng cỡ nào**, **làm gì tiếp** |
-| **Kỹ sư hệ thống** (SRE, IT ops) | đường đi dữ liệu: cảm biến → broker → ingest → database | biết lỗi nằm ở **hạ tầng dữ liệu** hay ở **thiết bị**, và khoanh vùng nhanh bằng metrics, logs, traces |
+| **Kỹ sư hệ thống** (SRE, IT ops) | đường đi dữ liệu: cảm biến → ingest → database | biết lỗi nằm ở **hạ tầng dữ liệu** hay ở **thiết bị**, và khoanh vùng nhanh bằng metrics, logs, traces |
 
 ### 2.2 Vòng đời một sự cố
 
@@ -78,17 +78,23 @@ User story để định hướng khi build:
 3. *Là SRE, tôi muốn từ một cảnh báo nhảy thẳng tới log và trace liên quan, để biết lỗi ở ingest hay ở thiết bị.*
 4. *Là trưởng nhóm, tôi muốn xem sau mỗi sự cố: phát hiện sau bao lâu, xử lý mất bao lâu, ai làm gì.*
 
-## 4. Kiến trúc tối thiểu
+## 4. Kiến trúc tối thiểu: MongoDB là trung tâm
+
+Đề chỉ bắt buộc **MongoDB** (nền tảng dữ liệu vận hành chính) và **Datadog**. **Không cần broker MQTT**: mọi dữ liệu, trạng thái và lệnh giữa các thành phần đều đi qua MongoDB, nên MongoDB "gắn chặt với bài toán vận hành" đúng như thể lệ yêu cầu.
 
 ```
-[replayer] ──MQTT──► [Mosquitto] ──► [ingest] ──► MongoDB Atlas ◄── [detector worker]
-  phát lại DAD                         │ metrics/logs/traces        │ incidents (Change Stream)
-  tua ×60                              ▼                            ▼
-                                    Datadog ──── monitor ──webhook──► [remediator] ──lệnh──► replayer
+[replayer] ──HTTP──► [ingest API] ──► MongoDB Atlas ◄── [detector worker]   (aggregation mỗi P giây)
+  phát lại DAD          │ metrics/      telemetry, devices        │
+  tua ×60               │ logs/traces   incidents ──Change Stream──► [remediator]
+      ▲                 ▼                                                │
+      └── Change Stream ── device_commands ◄─────────────────────────────┘
+                     Datadog (dashboard, monitor, APM, logs) ──webhook──► remediator
 ```
 
-- **Một ngôn ngữ cho tất cả:** Python, vì phân tích đã viết bằng Python (`src/` dùng lại được) và `ddtrace`, `pymongo`, `paho-mqtt` đều sẵn.
-- **Chạy bằng `docker compose`:** gồm Mosquitto, replayer, ingest, detector, remediator, Datadog Agent. MongoDB dùng **Atlas**. Ngày đầu kiểm tra cluster miễn phí có đủ ba thứ cần dùng không: Time Series, `$median` (cần MongoDB ≥ 7.0) và Change Streams. Thiếu thì dùng gói trả phí nhỏ nhất hoặc credit cuộc thi (nếu có).
+- **Bốn tiến trình Python:** replayer, ingest API, detector, remediator. Dùng lại được code trong `src/` (`dad_mongo_pipelines.py`, `dad_mongo_load.py`). Thư viện: `pymongo`, `fastapi`, `ddtrace`, `datadog`.
+- **Chạy bằng `docker compose`:** 4 tiến trình trên + Datadog Agent. MongoDB dùng **Atlas**.
+- **Ngày đầu kiểm tra cluster Atlas** có đủ: Time Series, `$median` (cần MongoDB ≥ 7.0), Change Streams (cần replica set; Atlas luôn có).
+- **Change Streams không chạy trên Time Series Collection** (đã thử trên MongoDB 8.0). Dùng chúng cho `incidents` và `device_commands`; phát hiện trên `telemetry` chạy theo chu kỳ.
 - **Dữ liệu ban đầu:** `python src/dad_mongo_load.py` nạp 9 collection có sẵn trong `data/mongo/`.
 
 ## 5. Kế hoạch build 17/10 – 31/10
@@ -98,7 +104,7 @@ Nguyên tắc: **cuối mỗi mốc phải có thứ chạy được để demo*
 | Ngày | Mục tiêu | Xong khi |
 |---|---|---|
 | **Trước 17/10** | Đăng ký đội (hạn 12/10); xem 2 buổi workshop; chuẩn bị email công việc cho Datadog trial; đọc notebook 00 và `MONITOR_SPEC.md` | cả đội hiểu dataset và 3 loại sự cố |
-| **17–18/10** | **Đường đi xuyên suốt:** tạo Atlas + Datadog trial; nạp `data/mongo`; replayer đọc `telemetry_hist`, phát MQTT tua ×60; ingest ghi vào `telemetry` và gửi metric `dad.temp` | thấy đường nhiệt độ chạy trên Datadog **và** document mới trong MongoDB |
+| **17–18/10** | **Đường đi xuyên suốt:** tạo Atlas + Datadog trial; nạp `data/mongo`; replayer đọc `telemetry_hist`, dời thời gian, tua ×60, gửi HTTP tới ingest; ingest ghi vào `telemetry` và gửi metric `dad.temp` | thấy đường nhiệt độ chạy trên Datadog **và** document mới trong MongoDB |
 | **19–21/10** | **Phát hiện:** detector worker chạy `dad_mongo_pipelines.py` mỗi chu kỳ, đẩy `dad.node.*`; tạo monitor M1, M2, M3, M6 | replay thứ Tư thì M3 đỏ; replay thứ Năm thì M2 đỏ |
 | **22–24/10** | **Sự cố và xử lý:** ghi `incidents` + `evidence`; remediator nghe Change Stream và webhook Datadog; làm 3 hành động: reconnect, rate-limit, quarantine (cần duyệt); đóng sự cố sau 3 chu kỳ sạch | một sự cố đi trọn vòng: open → mitigated → resolved, có MTTD và MTTR |
 | **25–27/10** | **Quan sát và điều tra:** dashboard một màn hình; log JSON có `incident_id` và `dd.trace_id`; APM trace ingest → Mongo; sự cố hạ tầng (tắt ingest) | từ cảnh báo bấm sang log và trace của đúng bản tin |
@@ -122,7 +128,7 @@ Nguyên tắc: **cuối mỗi mốc phải có thứ chạy được để demo*
 | Câu hỏi | Đề xuất |
 |---|---|
 | Tốc độ replay | ×60 (P = 5 giây); mọi ngưỡng tính theo bội số P |
-| MQTT broker | Mosquitto trong docker compose (đơn giản nhất); hoặc **EMQX**, vì Datadog có tích hợp chính thức cho EMQX, nên có sẵn metric broker cho lớp hạ tầng (xem `NGHIEP_VU_GIAM_SAT.md` mục 6b) |
+| Broker MQTT | **Không dùng.** Replayer gửi thẳng tới ingest API qua HTTP; lệnh khắc phục đi qua collection `device_commands` |
 | Detector chạy đâu | worker Python gọi Aggregation Pipeline mỗi P giây; MongoDB làm phần tính toán |
 | Duyệt cách ly | API `POST /incidents/{id}/approve` (thêm trang web nhỏ nếu còn thời gian) |
 | Demo truy cập được | chạy cục bộ và quay video; nếu cần link thì đẩy lên một VM nhỏ |

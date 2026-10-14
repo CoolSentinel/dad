@@ -35,22 +35,29 @@ Cách câu chuyện này đáp ứng các tiêu chí chấm:
 | Kết nối metrics, logs, traces | Mọi log và trace mang `inrow`, `client_id`, `incident_id`, `dd.trace_id` |
 | Khai báo dataset ngoài, công cụ AI, thành phần có sẵn | Mục 9 |
 
-## 3. Kiến trúc
+## 3. Kiến trúc: MongoDB là trung tâm, không cần broker
+
+Đề chỉ bắt buộc MongoDB (nền tảng dữ liệu vận hành chính) và Datadog. **Không dùng broker MQTT**: dataset gốc là MQTT, nhưng hệ thống demo không cần tái tạo tầng mạng đó. Mọi trạng thái và mọi giao tiếp giữa các thành phần đều đi qua MongoDB:
 
 ```
-DAD PCAP ──► replayer (Python, tua ×60) ──MQTT QoS1──► Mosquitto ──► ingest (Python + ddtrace)
-                 ▲  thêm seq, device_ts                                  │ ghi
-                 │  nhận lệnh dc/{inrow}/cmd                              ▼
-            remediator ◄── webhook Datadog / API ◄── incidents ◄── detector worker ◄── MongoDB Atlas
-                 │                                     (Change Stream)   (aggregation mỗi P giây)
-                 └──► MongoDB `actions`  ───────────────────────────────►  DogStatsD + logs + APM ──► Datadog
+                      ┌──────────────────────── MongoDB Atlas ───────────────────────────┐
+[replayer] ─HTTP POST─► [ingest API] ─► telemetry (Time Series, TTL)                       │
+  đọc telemetry_hist      │ ddtrace      devices (last_seen, quality, rate_limited)         │
+  dời thời gian, ×60      │              │                                                  │
+      ▲                   │   [detector worker] ── aggregation mỗi P giây ──► incidents ───┼─ Change Stream ─► [remediator]
+      │                   │                                                                 │                      │
+      └── Change Stream ── device_commands ◄──────────────── actions ◄─────────────────────┼──────────────────────┘
+                          │                                                                 │
+                          └──── metrics (DogStatsD) + logs + traces ──► Datadog ── webhook ─┘ (người duyệt: API approve)
 ```
 
-- **Replayer:** đọc PCAP, phát lại đúng thứ tự và khoảng cách (chia 60). Bản tin là JSON `{clientId, seq, value, device_ts}`; topic `dc/{inrow}/{sensor}/temp`.
-- **Ingest:** nhận MQTT, ghi `telemetry`, đẩy metric và log, mỗi bản tin một span APM.
-- **Detector worker:** mỗi `P` giây chạy các pipeline ở mục 4.2, ghi `node_slots` và mở/cập nhật `incidents`, đẩy metric phát hiện.
-- **Remediator:** nghe Change Stream trên `incidents` và webhook từ Datadog; thực hiện hành động ở mục 6.
+- **Replayer:** đọc `telemetry_hist`, dời thời gian về hiện tại, nén ×60 (`dad_mongo_load.load_scenario` đã làm sẵn phần dời/nén), gửi từng bản tin tới ingest qua HTTP. Nghe `device_commands` để "kết nối lại" hoặc ngừng gửi theo lệnh.
+- **Ingest API** (ví dụ FastAPI + `ddtrace`): nhận bản tin, ghi `telemetry`, cập nhật `devices.last_seen`, gửi metric `dad.*` và log. **Mỗi bản tin là một trace APM** (`POST /ingest` → `mongo.insert`). Đây là nguồn cho lớp 4 (độ trễ, lỗi), thay cho số liệu PUBACK của broker.
+- **Detector worker:** mỗi `P` giây chạy các pipeline ở mục 4.2 trên `telemetry`; mở/cập nhật `incidents` (kèm `evidence`); gửi metric phát hiện.
+- **Remediator:** nghe **Change Stream** trên `incidents` (và webhook Datadog), ghi `actions` và `device_commands`; cập nhật `devices.quality` / `rate_limited`.
+- **Lưu ý đã kiểm chứng:** **Change Streams KHÔNG chạy trên Time Series Collection** (MongoDB 8.0 báo lỗi khi `watch()` trên `telemetry`). Vì vậy phát hiện chạy theo chu kỳ bằng aggregation trên `telemetry`; Change Streams dùng cho các collection thường: `incidents`, `device_commands`.
 - **Tham số hoá chu kỳ `P`**: 300 giây khi chạy thời gian thật, 5 giây khi tua ×60. **Mọi ngưỡng thời gian tính theo bội số của `P`**.
+- *Tuỳ chọn, chỉ khi còn thời gian:* thêm broker MQTT giữa replayer và ingest để giống hệ thống thật hơn. Không ảnh hưởng điểm bắt buộc.
 
 ## 4. MongoDB
 
@@ -67,6 +74,7 @@ Dữ liệu ban đầu xuất từ dataset gốc bằng `src/dad_export.py`, n�
 | `mqtt_sessions` | thường | 112 | `conn`, `keepalive_s`, `n_publish`, `n_unacked`, `puback_p99_ms` | index `{clientId, connect_ts}` |
 | `traffic_daily` | thường | 35 | số gói theo ngày × IP × loại | — |
 | `incidents` | thường, có validator | 0 | `inrow`, `status` (`open`/`ack`/`mitigated`/`resolved`), `kinds[]`, `evidence {lost, extra, drop_c, sensors}`, `detected_at`, `resolved_at` | index `{status, inrow}`; **Change Stream** cho remediator |
+| `device_commands` | thường | 0 | `inrow`, `command` (`reconnect`/`stop`/`resume`), `issued_at`, `done_at` | **Change Stream** cho replayer |
 | `actions` | thường, có validator | 0 | `incident_id`, `action`, `by`, `at`, `result` | — |
 | `gt_labels`, `gt_incidents` | thường | 544, 11 | nhãn gốc và 11 cửa sổ sự cố kèm kết quả điều tra | chỉ dùng để chấm, **không** cho bộ phát hiện đọc |
 | `detector_config`, `demo_scenarios` | thường | 1, 4 | ngưỡng; đoạn dữ liệu cho demo | — |
@@ -139,7 +147,7 @@ Tag chung: `env`, `site`, `inrow`, `sensor`, `client_id`.
 | `dad.range.violations` | count | worker | vi phạm RANGE |
 | `dad.ingest.lag_seconds` | gauge | ingest | thời điểm ghi MongoDB − `device_ts` |
 | `dad.ingest.dropped` | count | ingest | bản tin bị lọc khi node đang `rate_limited` |
-| `mqtt.puback_latency_ms` | distribution | replayer | baseline từ DAD: p50 0,17 ms, p99 0,6 ms |
+| `trace.ingest` (APM) | trace | ingest | độ trễ và lỗi của `POST /ingest` (p50/p95/p99), có sẵn khi bật `ddtrace` |
 | `dad.incident.open` | gauge | worker | số incident đang mở, theo `kind` |
 
 ### 5.2 Monitors (chốt)
@@ -167,17 +175,17 @@ Tag chung: `env`, `site`, `inrow`, `sensor`, `client_id`.
 | 2. Nhiệt độ | `dad.temp` theo InRow, 4 đường mỗi cảm biến · overlay Event incident |
 | 3. Phát hiện | `silence_periods`, `burst_count`, `neg_count6` theo InRow, có vạch ngưỡng |
 | 4. Điều tra | bảng incident (kind, lost, extra, drop_c, sensors) · log stream lọc `incident_id` · top trace chậm của ingest |
-| 5. Hạ tầng | `ingest.lag_seconds` · `mqtt.puback_latency_ms` p99 · lỗi log theo service |
+| 5. Hạ tầng | `ingest.lag_seconds` · độ trễ `POST /ingest` p99 (APM) · lỗi log theo service |
 
 ### 5.4 Logs và APM
 - Log JSON từ `replayer`, `ingest`, `detector`, `remediator`, có trường `inrow`, `client_id`, `incident_id`, `rule`, `dd.trace_id`, `dd.span_id`.
-- `ddtrace`: span `mqtt.receive` → `mongo.insert` → `detector.evaluate` → `remediator.action`. Từ một cảnh báo có thể nhảy sang log, sang trace của đúng bản tin.
+- `ddtrace`: span `POST /ingest` → `mongo.insert` → `detector.evaluate` → `remediator.action`. Từ một cảnh báo có thể nhảy sang log, sang trace của đúng bản tin.
 
 ## 6. Xử lý sự cố (runbook)
 
 | Loại (phát hiện bởi) | Kết luận | Hành động | Tự động? | Xác nhận đã ổn |
 |---|---|---|---|---|
-| **Chặn gói** (M1, cả 4 cảm biến cùng im) | node mất kết nối hoặc gói bị chặn | gửi `reconnect` tới `dc/{inrow}/cmd`; đánh dấu khoảng thiếu dữ liệu; nội suy có gắn cờ | tự động; báo người nếu kéo dài > 3P | bản tin quay lại, `silence_periods` < 1,2 trong 3 chu kỳ |
+| **Chặn gói** (M1, cả 4 cảm biến cùng im) | node mất kết nối hoặc gói bị chặn | ghi lệnh `reconnect` vào `device_commands` (replayer nhận qua Change Stream); đánh dấu khoảng thiếu dữ liệu; nội suy có gắn cờ | tự động; báo người nếu kéo dài > 3P | bản tin quay lại, `silence_periods` < 1,2 trong 3 chu kỳ |
 | **Chèn gói** (M2) | node gửi lặp hoặc bị chèn | bật `rate_limited` cho node (ingest lọc bản tin đến sớm hơn 0,8P) | tự động | `burst_count` = 0 trong 3 chu kỳ; `ingest.dropped` ngừng tăng |
 | **Sửa giá trị** (M3, 4/4 cảm biến) | dữ liệu node không đáng tin | đặt `quality=suspect`; **ngừng dùng InRow này cho điều khiển làm mát**; dùng giá trị cuối đáng tin + cảnh báo vận hành | **cần người duyệt** (D4 có thể báo giả ngoài DAD) | `neg_count6` về 0 trong 3 chu kỳ → `quality=ok`, đóng incident |
 | **Một cảm biến lệch** (M4 / M5, chỉ 1/4) | nghi hỏng cảm biến | gắn cờ cảm biến, mở ticket bảo trì | tự động | — |

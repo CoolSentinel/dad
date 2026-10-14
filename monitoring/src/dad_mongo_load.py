@@ -5,7 +5,8 @@ Chạy:  MONGODB_URI="mongodb+srv://..." python src/dad_mongo_load.py [--db dad]
 Tạo:
 - telemetry_hist : Time Series, dữ liệu gốc 2019, KHÔNG có TTL (TTL 7 ngày sẽ xoá sạch dữ liệu năm 2019 ngay khi nạp)
 - telemetry      : Time Series rỗng cho replay/live, CÓ TTL 7 ngày
-- incidents, actions : rỗng, có JSON Schema validator, dùng khi hệ thống chạy
+- incidents, actions, device_commands : rỗng, có JSON Schema validator, dùng khi hệ thống chạy
+  (Change Streams chạy trên các collection thường này; KHÔNG chạy được trên Time Series)
 - devices, inrows, mqtt_sessions, traffic_daily, gt_labels, gt_incidents, detector_config, demo_scenarios
 """
 from __future__ import annotations
@@ -34,6 +35,9 @@ VALIDATORS = {
                                   "properties": {"status": {"enum": ["open", "ack", "mitigated", "resolved"]},
                                                  "kinds": {"bsonType": "array", "items": {"enum": ["interception", "duplication", "modification", "physics", "range", "infra"]}},
                                                  "detected_at": {"bsonType": "date"}}}},
+    "device_commands": {"$jsonSchema": {"bsonType": "object", "required": ["inrow", "command", "issued_at"],
+                                        "properties": {"command": {"enum": ["reconnect", "stop", "resume"]},
+                                                       "issued_at": {"bsonType": "date"}}}},
     "actions": {"$jsonSchema": {"bsonType": "object", "required": ["incident_id", "action", "at"],
                                 "properties": {"action": {"enum": ["reconnect", "rate_limit", "quarantine", "release", "ticket", "restart_ingest"]},
                                                "at": {"bsonType": "date"}}}},
@@ -60,7 +64,7 @@ def load(uri: str, db_name: str, data_dir: str, drop: bool = True) -> dict[str, 
     files = sorted(f for f in os.listdir(data_dir) if f.endswith(".ndjson.gz"))
     existing = set(db.list_collection_names())
     if drop:
-        for name in [f[:-len(".ndjson.gz")] for f in files] + ["telemetry", "incidents", "actions"]:
+        for name in [f[:-len(".ndjson.gz")] for f in files] + ["telemetry", "incidents", "actions", "device_commands"]:
             if name in existing:
                 db.drop_collection(name)
         existing = set()
