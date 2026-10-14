@@ -12,6 +12,8 @@ Notebook (đã chạy sẵn, có đủ bảng và biểu đồ), đọc theo th�
 
 **Đặc tả monitor chốt cho cuộc thi:** [`MONITOR_SPEC.md`](MONITOR_SPEC.md).
 
+**Tự host MongoDB trên EC2 (thay Atlas):** [`MONGODB_EC2.md`](MONGODB_EC2.md).
+
 **Cái gì đáng monitor từ cảm biến, ngưỡng bao nhiêu, dashboard cho ai:** [`NGHIEP_VU_GIAM_SAT.md`](NGHIEP_VU_GIAM_SAT.md).
 
 **Chưa có kinh nghiệm vận hành? Đọc trước:** [`HUONG_TRIEN_KHAI.md`](HUONG_TRIEN_KHAI.md): cách nghĩ về bài toán, nghiệp vụ xử lý sự cố ngoài đời, kế hoạch build 17–31/10, chia việc, rủi ro.

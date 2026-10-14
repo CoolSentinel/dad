@@ -92,7 +92,7 @@ User story để định hướng khi build:
 ```
 
 - **Bốn tiến trình Python:** replayer, ingest API, detector, remediator. Dùng lại được code trong `src/` (`dad_mongo_pipelines.py`, `dad_mongo_load.py`). Thư viện: `pymongo`, `fastapi`, `ddtrace`, `datadog`.
-- **Chạy bằng `docker compose`:** 4 tiến trình trên + Datadog Agent. MongoDB dùng **Atlas**.
+- **Chạy bằng `docker compose`:** 4 tiến trình trên + Datadog Agent. MongoDB dùng **Atlas** hoặc **tự host trên EC2** (hướng dẫn và các bẫy đã kiểm chứng: `MONGODB_EC2.md`).
 - **Ngày đầu kiểm tra cluster Atlas** có đủ: Time Series, `$median` (cần MongoDB ≥ 7.0), Change Streams (cần replica set; Atlas luôn có).
 - **Change Streams không chạy trên Time Series Collection** (đã thử trên MongoDB 8.0). Dùng chúng cho `incidents` và `device_commands`; phát hiện trên `telemetry` chạy theo chu kỳ.
 - **Dữ liệu ban đầu:** `python src/dad_mongo_load.py` nạp 9 collection có sẵn trong `data/mongo/`.
