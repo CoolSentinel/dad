@@ -10,17 +10,21 @@ Mọi bản ghi trong mục 4 đã được đọc lại **trực tiếp** từ 
 
 ## 1. Dataset gốc gồm những file nào
 
-21 file nằm ở **thư mục gốc của repo** `dad/` (cùng cấp với thư mục `monitoring/`). Mỗi ngày 3 file:
+21 file nằm trong thư mục **`data/`** của repo `dad/` (cùng cấp với `monitoring/`), chia theo ngày:
+- **`data/binh_thuong/`**: thứ Hai 21/10 và Chủ nhật 27/10, không có tấn công nào;
+- **`data/bat_thuong/`**: thứ Ba 22/10 đến thứ Bảy 26/10, có ít nhất một đợt tấn công. Không phải mọi bản tin trong đó đều bất thường: 3 tủ còn lại vẫn bình thường, InRow 13 chỉ bị tấn công trong vài khung giờ.
 
-| Ngày | Thứ | PCAP (gói tin) | Nhãn CSV | Nhãn XML |
-|---|---|---|---|---|
-| 21/10/2019 | Hai | `capture_1910210000_mon.pcap` | `capture_1910210000_labels.csv` | `capture_1910210000_labels.xml` |
-| 22/10/2019 | Ba | `capture_1910220000_tue.pcap` | `capture_1910220000_labels.csv` | `capture_1910220000_labels.xml` |
-| 23/10/2019 | Tư | `capture_1910230000_wed.pcap` | `capture_1910230000_labels.csv` | `capture_1910230000_labels.xml` |
-| 24/10/2019 | Năm | `capture_1910240000_thu.pcap` | `capture_1910240000_labels.csv` | `capture_1910240000_labels.xml` |
-| 25/10/2019 | Sáu | `capture_1910250000_fri.pcap` | `capture_1910250000_labels.csv` | `capture_1910250000_labels.xml` |
-| 26/10/2019 | Bảy | `capture_1910260000_sat.pcap` | `capture_1910260000_labels.csv` | `capture_1910260000_labels.xml` |
-| 27/10/2019 | Chủ nhật | `capture_1910270000_sun.pcap` | `capture_1910270000_labels.csv` | `capture_1910270000_labels.xml` |
+Mỗi ngày 3 file, luôn nằm cùng một thư mục:
+
+| Ngày | Thứ | Thư mục | PCAP (gói tin) | Nhãn CSV | Nhãn XML |
+|---|---|---|---|---|---|
+| 21/10/2019 | Hai | `binh_thuong/` | `capture_1910210000_mon.pcap` | `capture_1910210000_labels.csv` | `capture_1910210000_labels.xml` |
+| 22/10/2019 | Ba | `bat_thuong/` | `capture_1910220000_tue.pcap` | `capture_1910220000_labels.csv` | `capture_1910220000_labels.xml` |
+| 23/10/2019 | Tư | `bat_thuong/` | `capture_1910230000_wed.pcap` | `capture_1910230000_labels.csv` | `capture_1910230000_labels.xml` |
+| 24/10/2019 | Năm | `bat_thuong/` | `capture_1910240000_thu.pcap` | `capture_1910240000_labels.csv` | `capture_1910240000_labels.xml` |
+| 25/10/2019 | Sáu | `bat_thuong/` | `capture_1910250000_fri.pcap` | `capture_1910250000_labels.csv` | `capture_1910250000_labels.xml` |
+| 26/10/2019 | Bảy | `bat_thuong/` | `capture_1910260000_sat.pcap` | `capture_1910260000_labels.csv` | `capture_1910260000_labels.xml` |
+| 27/10/2019 | Chủ nhật | `binh_thuong/` | `capture_1910270000_sun.pcap` | `capture_1910270000_labels.csv` | `capture_1910270000_labels.xml` |
 
 Tên file: `capture_YYMMDDhhmm_...`, ví dụ `1910230000` = năm 2019, tháng 10, ngày 23, 00:00 (giờ Tây Ban Nha).
 
@@ -41,7 +45,7 @@ Tên file: `capture_YYMMDDhhmm_...`, ví dụ `1910230000` = năm 2019, tháng 1
 - **Không có nhiệt độ** trong CSV.
 
 ### 1.3 File `_labels.xml`
-- Chỉ có `frame.number` và `label`, mỗi gói một dòng `<packet>…</packet>`. Trùng hoàn toàn với CSV (notebook, mục B.2). Không cần dùng.
+- Chỉ có `frame.number` và `label`, mỗi gói một dòng `<packet>…</packet>`. Trùng hoàn toàn với CSV (notebook, mục “File nhãn”). Không cần dùng.
 
 ### 1.4 Định danh: đọc một dòng thế nào
 
@@ -55,7 +59,7 @@ Tên file: `capture_YYMMDDhhmm_...`, ví dụ `1910230000` = năm 2019, tháng 1
 | chữ số cuối của `clientId` | 1 = TFEU (nước vào ≈ 11 °C), 2 = TFSU (nước ra ≈ 15 °C), 3 = TAS (khí cấp ≈ 20 °C), 4 = TAR (khí hồi ≈ 27 °C) |
 | UDP cổng 123 | đồng bộ giờ NTP |
 
-Ánh xạ chữ số → loại cảm biến được suy ra **từ giá trị đo** (notebook, mục B.6); chú thích Hình 1 của bài báo ghi ngược vị trí 3 và 4.
+Ánh xạ chữ số → loại cảm biến được suy ra **từ giá trị đo** (notebook, mục “Từ điển định danh”); chú thích Hình 1 của bài báo ghi ngược vị trí 3 và 4.
 
 ---
 
@@ -63,7 +67,7 @@ Tên file: `capture_YYMMDDhhmm_...`, ví dụ `1910230000` = năm 2019, tháng 1
 
 Wireshark là phần mềm có giao diện, đã cài sẵn trên máy (bản 4.2.2). Cách nhanh nhất là mở từ terminal ở thư mục gốc repo `dad/`, nhảy thẳng tới một frame, giờ hiển thị theo UTC:
 ```bash
-wireshark -r capture_1910230000_wed.pcap -g 2707 -t ud &
+wireshark -r data/bat_thuong/capture_1910230000_wed.pcap -g 2707 -t ud &
 ```
 `-r` là file cần mở, `-g` là số frame cần nhảy tới, `-t ud` là hiển thị ngày giờ theo UTC. Cũng có thể mở Wireshark từ menu ứng dụng rồi chọn *File → Open*.
 
@@ -105,7 +109,7 @@ Payload nhiệt độ nằm ở dòng **Message** của lớp *MQ Telemetry Tran
 | `capture_1910260000_sat.pcap` | 9,339 | 4,648 | 4,644 | 16 | 15 | 492 | 1,192 | 0 |
 | `capture_1910270000_sun.pcap` | 9,277 | 4,624 | 4,608 | 16 | 13 | 492 | 1,156 | 0 |
 
-Cột `mqtt` và `udp` khớp **Table 5** của bài báo từng ngày (notebook, mục B.3).
+Cột `mqtt` và `udp` khớp **Table 5** của bài báo từng ngày (notebook, mục “Tầng mạng”).
 
 ---
 
@@ -113,20 +117,20 @@ Cột `mqtt` và `udp` khớp **Table 5** của bài báo từng ngày (notebook
 
 ### 3.1 CSV
 - **LibreOffice Calc / Excel:** khi mở chọn dấu phân cách là `;`. Số dòng hiển thị = frame + 1.
-- **Terminal** (chạy ở thư mục gốc repo `dad/`):
+- **Terminal** (chạy ở thư mục gốc repo `dad/`; file dữ liệu nằm trong `data/binh_thuong/` hoặc `data/bat_thuong/`):
   ```bash
-  sed -n '2708p' capture_1910230000_labels.csv          # dòng của frame 2707
-  grep -n '^2707;' capture_1910230000_labels.csv        # tìm theo số frame
-  grep -c ';1$' capture_1910230000_labels.csv           # đếm số nhãn 1 trong file
-  grep ';1$' capture_1910230000_labels.csv | head       # xem các dòng nhãn 1
+  sed -n '2708p' data/bat_thuong/capture_1910230000_labels.csv          # dòng của frame 2707
+  grep -n '^2707;' data/bat_thuong/capture_1910230000_labels.csv        # tìm theo số frame
+  grep -c ';1$' data/bat_thuong/capture_1910230000_labels.csv           # đếm số nhãn 1 trong file
+  grep ';1$' data/bat_thuong/capture_1910230000_labels.csv | head       # xem các dòng nhãn 1
   ```
 
 ### 3.2 Script `xem_frame.py`
 In nội dung frame (giờ UTC, giờ Madrid, IP, cổng, loại MQTT, `clientId`, `msgid`, payload nhiệt độ) **kèm dòng CSV cùng frame**. Đọc thẳng file gốc bằng `scapy`, không dùng code phân tích:
 ```bash
 # chạy ở thư mục gốc repo dad/, môi trường monitoring/.venv
-python monitoring/src/xem_frame.py capture_1910230000_wed.pcap 2707
-python monitoring/src/xem_frame.py capture_1910230000_wed.pcap --tu 2700 --den 2716
+python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap 2707
+python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap --tu 2700 --den 2716
 ```
 Ví dụ kết quả:
 ```
@@ -141,7 +145,7 @@ frame 2707 | UTC 2019-10-23 02:10:07.155 | Madrid 2019-10-23 04:10:07 +0200 | TC
 
 Mỗi bảng gắn với một mục của notebook. Cột "dòng CSV" là **nguyên văn** dòng trong file `_labels.csv` cùng ngày. Cột "cách bản tin trước" là khoảng thời gian tới bản tin trước của **cùng cảm biến** (bình thường ≈ 300 s).
 
-### T1. Một phiên MQTT bình thường (notebook B.4)
+### T1. Một phiên MQTT bình thường (notebook mục “MQTT”)
 File `capture_1910210000_mon.pcap`. Cảm biến 131 kết nối lúc 00:00:02, gửi bản tin đầu tiên, broker xác nhận; 5 phút sau gửi bản tin thứ hai.
 
 | frame (No.) | giờ Madrid | gói | nội dung | dòng CSV (nguyên văn) |
@@ -155,7 +159,7 @@ File `capture_1910210000_mon.pcap`. Cảm biến 131 kết nối lúc 00:00:02, 
 
 Thấy được: `clientId` chỉ xuất hiện ở gói CONNECT (frame 125); các gói PUBLISH sau đó chỉ có IP + cổng `49134`, nên phải nhớ cổng ↔ `clientId`. Dòng CSV của PUBLISH thì có điền sẵn `clientId` (131) và `msgid`.
 
-### T2. 16 cảm biến gửi gần như cùng lúc (notebook C.1)
+### T2. 16 cảm biến gửi gần như cùng lúc (notebook mục “Nhịp gửi”)
 Mọi bản tin lúc 00:10 thứ Hai. Cả 16 cảm biến đều gửi trong cùng giây 00:10:02.
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
@@ -177,7 +181,7 @@ Mọi bản tin lúc 00:10 thứ Hai. Cả 16 cảm biến đều gửi trong c�
 | `capture_1910210000_mon.pcap` | **255** | 00:10:02 | 22:10:02 | 134 (TAR) | 3 | 27.64 | 300 s | `255;10.6.56.41;49138;134;3;0` |
 | `capture_1910210000_mon.pcap` | **258** | 00:10:02 | 22:10:02 | 132 (TFSU) | 3 | 16.24 | 300 s | `258;10.6.56.41;49140;132;3;0` |
 
-### T3. Sửa giá trị: cả tủ bị trừ cùng lúc (notebook D.4)
+### T3. Sửa giá trị: cả tủ bị trừ cùng lúc (notebook mục “Sửa giá trị”)
 File `capture_1910230000_wed.pcap`, InRow 13. **04:05** bình thường, **04:10** bị trừ khoảng 2 °C ở cả 4 cảm biến, **04:25** mang nhãn 1 nhưng giá trị **không đổi**.
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
@@ -201,7 +205,7 @@ Thấy được:
 - Nhịp gửi vẫn đúng 300 s: sửa giá trị **không** để lại dấu vết thời gian.
 - Trong Wireshark: `frame.number >= 2650 && frame.number <= 2870 && mqtt.msgtype == 3 && ip.src == 10.6.56.41`.
 
-### T4. Chèn bản tin (notebook D.3)
+### T4. Chèn bản tin (notebook mục “Chèn bản tin”)
 File `capture_1910240000_thu.pcap`, cảm biến 131, 03:00–03:30 thứ Năm.
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
@@ -230,7 +234,7 @@ Thấy được:
 - 03:23:32 đến sớm 72 giây nhưng **nhãn 0**: bản tin bình thường đầu tiên sau đợt chèn, pha gửi đã bị xô. Từ đó nhịp quay lại 300 s nhưng lệch pha (giây :32 thay vì :06).
 - `msgid` tăng liền 37 → 53: bản tin chèn cũng được đánh số liên tục.
 
-### T5. Một đợt chèn: 4 cảm biến gửi cùng lúc (notebook D.3)
+### T5. Một đợt chèn: 4 cảm biến gửi cùng lúc (notebook mục “Chèn bản tin”)
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
 |---|---|---|---|---|---|---|---|---|
@@ -241,7 +245,7 @@ Thấy được:
 
 Cả 4 cảm biến của InRow 13 gửi trong cùng giây 03:06:37, đều cách bản tin trước 91 giây, đều nhãn 1. Giá trị đều thấp hơn bình thường (16,97 °C ở TAS so với ≈ 20).
 
-### T6. Chặn gói: khoảng hở, `msgid` vẫn liên tục (notebook D.2, B.4)
+### T6. Chặn gói: khoảng hở, `msgid` vẫn liên tục (notebook mục “Mất bản tin”, mục “MQTT”)
 File `capture_1910220000_tue.pcap`, cảm biến 131, 00:00–00:45 thứ Ba.
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
@@ -260,7 +264,7 @@ Thấy được:
 - CSV không có dòng nào cho 2 bản tin bị mất, và cũng không có nhãn 1 nào: chặn gói không có nhãn.
 - Kiểm thêm: lọc `mqtt.msgtype == 3 && ip.src == 10.6.56.41 && frame.number < 600` để thấy cả 4 cảm biến của InRow 13 cùng hở ở cùng chỗ.
 
-### T7. Đêm thứ Năm: node tự ngắt kết nối, không phải chặn gói (notebook D.2)
+### T7. Đêm thứ Năm: node tự ngắt kết nối, không phải chặn gói (notebook mục “Mất bản tin”)
 File `capture_1910240000_thu.pcap`, mọi gói từ/tới InRow 13 sau 23:03 (bỏ các gói TCP ACK/FIN thuần).
 
 | frame (No.) | giờ Madrid | gói | nội dung | dòng CSV (nguyên văn) |
@@ -288,7 +292,7 @@ Thấy được:
 - Sau đó InRow 13 vẫn gửi NTP lúc 23:20, 23:37, 23:55: máy còn sống, chỉ thôi gửi nhiệt độ.
 - So sánh: lọc `mqtt.msgtype == 14` trong file thứ Năm sẽ thấy 20 gói DISCONNECT: 4 gói lúc 23:08:56 của InRow 13 và 16 gói lúc 00:00:31 (các phiên của ngày thứ Tư đóng khi chuyển ngày).
 
-### T8. 20 bản tin không được xác nhận PUBACK (notebook C.5, D.6)
+### T8. 20 bản tin không được xác nhận PUBACK (notebook mục “Sức khoẻ tầng mạng”, mục “Trông như bất thường nhưng không phải”)
 Đều là bản tin của **phiên hôm trước** đến sau nửa đêm.
 
 | file | frame (No.) | giờ Madrid | giờ UTC | clientId (cảm biến) | msgid | payload (°C) | cách bản tin trước | dòng CSV (nguyên văn) |
@@ -316,7 +320,7 @@ Thấy được:
 
 Thấy được: `msgid` 289/293/298 vượt quá 288 là bản tin của phiên ngày hôm trước (phiên mới bắt đầu lại từ `msgid` 1 lúc 00:00:02). Lọc `frame.number <= 260 && mqtt.msgtype == 4` trong file thứ Bảy hoặc Chủ nhật: không có PUBACK nào cho các `msgid` này.
 
-### T9. `keepalive` đổi theo ngày (notebook B.4, D.6)
+### T9. `keepalive` đổi theo ngày (notebook mục “MQTT”, mục “Trông như bất thường nhưng không phải”)
 Gói CONNECT của cảm biến 131 mỗi ngày. Cột cổng TCP trong dòng CSV cũng là cổng của cảm biến 131 trong ngày đó, dùng cho bộ lọc `tcp.srcport == …`.
 
 | file | frame (No.) | giờ Madrid | clientId | keepalive (s) | clean session | dòng CSV |
@@ -329,9 +333,9 @@ Gói CONNECT của cảm biến 131 mỗi ngày. Cột cổng TCP trong dòng CS
 | `capture_1910260000_sat.pcap` | **105** | 00:00:02 | 131 | 18000 | 0 | `105;10.6.56.41;49174;;;0` |
 | `capture_1910270000_sun.pcap` | **49** | 00:00:02 | 131 | 300 | 1 | `49;10.6.56.41;49182;;;0` |
 
-Thứ Ba, thứ Sáu, thứ Bảy (3 ngày có chặn gói giữa phiên) dùng keepalive 18.000 s và clean session 0; các ngày khác 300 s và 1. Lọc `mqtt.msgtype == 1` trong file bất kỳ: cả 16 cảm biến (mọi tủ, kể cả tủ sạch) dùng cùng một giá trị, nên đây là cấu hình của quy trình sinh dữ liệu, không phải dấu hiệu tấn công.
+Thứ Ba, thứ Sáu, thứ Bảy (3 ngày có chặn gói giữa phiên) dùng keepalive 18.000 s và clean session 0; các ngày khác 300 s và 1. Lọc `mqtt.msgtype == 1` trong file bất kỳ: cả 16 cảm biến (mọi tủ, kể cả tủ sạch) dùng cùng một giá trị, nên đây là cấu hình chung của phiên thu dữ liệu ngày đó, không phải dấu hiệu tấn công.
 
-### T10. Đếm nhãn trong file CSV gốc (notebook B.5)
+### T10. Đếm nhãn trong file CSV gốc (notebook mục “Nhãn”)
 Đếm trực tiếp các dòng kết thúc bằng `;1` (tương đương `grep -c ';1$' <file>`).
 
 | file nhãn | số dòng dữ liệu | số dòng kết thúc bằng `;1` | nhãn 1 đầu tiên (nguyên văn) | nhãn 1 cuối cùng (nguyên văn) |
@@ -346,7 +350,7 @@ Thứ Ba, thứ Sáu, thứ Bảy (3 ngày có chặn gói giữa phiên) dùng 
 
 Tổng 104 + 56 + 192 + 192 = **544**. Bài báo ghi 1.088 gói bất thường = 544 PUBLISH + 544 PUBACK đi kèm.
 
-### T11. Ranh giới thời gian của mỗi file (notebook B.1)
+### T11. Ranh giới thời gian của mỗi file (notebook mục “Kiểm kê file”)
 
 | file | gói | frame đầu: giờ UTC | giờ Madrid | frame cuối: giờ UTC | giờ Madrid |
 |---|---|---|---|---|---|
@@ -366,18 +370,18 @@ Thấy được: mỗi file bắt đầu lúc 22:00 UTC hôm trước = 00:00 gi
 
 | Mục notebook | Khẳng định | Bảng |
 |---|---|---|
-| B.1 | file chia theo nửa đêm giờ Madrid; Chủ nhật đổi giờ | T11 |
-| B.2, B.5 | CSV: frame *n* ở dòng *n* + 1; 544 nhãn 1, chỉ InRow 13 | T3, T10 |
-| B.3 | số gói MQTT, UDP khớp Table 5 bài báo | mục 2.4 |
-| B.4 | `clientId` chỉ ở CONNECT; QoS 1; `msgid` liên tục; keepalive đổi theo ngày | T1, T6, T9 |
-| B.6 | IP ↔ tủ, chữ số cuối ↔ loại cảm biến; InRow 25 không có NTP | mục 1.4, mục 2.4 |
-| C.1 | 16 cảm biến gửi cùng lúc, chu kỳ 300 s | T2 |
-| C.5 | 20 PUBLISH không được PUBACK, đều lúc chuyển ngày | T8 |
-| D.2 | chặn gói = khoảng hở, cả 4 cảm biến, không nhãn | T6 |
-| D.2 | đêm thứ Năm là node tự ngắt kết nối | T7 |
-| D.3 | chèn bản tin: 4 cảm biến cùng gửi, 30–104 s; bản tin 03:23:32 nhãn 0 | T4, T5 |
-| D.4 | sửa giá trị: trừ cả tủ; có slot nhãn 1 không đổi giá trị | T3 |
-| D.6 | bản tin phiên cũ sau nửa đêm; keepalive | T8, T9 |
+| mục “Kiểm kê file” | file chia theo nửa đêm giờ Madrid; Chủ nhật đổi giờ | T11 |
+| mục “File nhãn”, mục “Nhãn” | CSV: frame *n* ở dòng *n* + 1; 544 nhãn 1, chỉ InRow 13 | T3, T10 |
+| mục “Tầng mạng” | số gói MQTT, UDP khớp Table 5 bài báo | mục 2.4 |
+| mục “MQTT” | `clientId` chỉ ở CONNECT; QoS 1; `msgid` liên tục; keepalive đổi theo ngày | T1, T6, T9 |
+| mục “Từ điển định danh” | IP ↔ tủ, chữ số cuối ↔ loại cảm biến; InRow 25 không có NTP | mục 1.4, mục 2.4 |
+| mục “Nhịp gửi” | 16 cảm biến gửi cùng lúc, chu kỳ 300 s | T2 |
+| mục “Sức khoẻ tầng mạng” | 20 PUBLISH không được PUBACK, đều lúc chuyển ngày | T8 |
+| mục “Mất bản tin” | chặn gói = khoảng hở, cả 4 cảm biến, không nhãn | T6 |
+| mục “Mất bản tin” | đêm thứ Năm là node tự ngắt kết nối | T7 |
+| mục “Chèn bản tin” | chèn bản tin: 4 cảm biến cùng gửi, 30–104 s; bản tin 03:23:32 nhãn 0 | T4, T5 |
+| mục “Sửa giá trị” | sửa giá trị: trừ cả tủ; có slot nhãn 1 không đổi giá trị | T3 |
+| mục “Trông như bất thường nhưng không phải” | bản tin phiên cũ sau nửa đêm; keepalive | T8, T9 |
 
 ---
 
@@ -387,18 +391,17 @@ Các thông số nghiệp vụ và chi tiết về dataset trong notebook đều
 
 | # | Nguồn | Dùng cho | Chỗ cụ thể |
 |---|---|---|---|
-| [1] | L. Vigoya, D. Fernandez, V. Carneiro, F. Cacheda, *Annotated Dataset for Anomaly Detection in a Data Center with IoT Sensors*, Sensors 2020, 20(13), 3745. https://pmc.ncbi.nlm.nih.gov/articles/PMC7374380/ | bối cảnh, cách sinh dữ liệu, testbed, tấn công, số liệu | sự cố CITIC: mục 1.1; cảm biến NFC, NetBotz, 4 cảm biến InRow: mục 3.1; 14 ngày đo, kiểm định phân phối, STL: mục 3.2; VMware ESXi 6.5, 5 máy ảo Ubuntu 18.04, Mosquitto, tcpdump, Scapy: mục 3.3; cách tạo 3 kiểu tấn công, MQTT không xác thực, đổi thời gian chờ khi chặn gói: mục 4.1; lịch tấn công theo ngày: mục 5; tổng số gói, flow 30 s, node có card mạng thứ hai: mục 5.1; Table 1 (thống kê dữ liệu thật): mục 3.2; Table 5: mục 5.1 |
+| [1] | L. Vigoya, D. Fernandez, V. Carneiro, F. Cacheda, *Annotated Dataset for Anomaly Detection in a Data Center with IoT Sensors*, Sensors 2020, 20(13), 3745. https://pmc.ncbi.nlm.nih.gov/articles/PMC7374380/ | bối cảnh, môi trường thu dữ liệu, tấn công, số liệu | sự cố CITIC: mục 1.1; cảm biến NFC, NetBotz, 4 cảm biến InRow: mục 3.1; 14 ngày đo: mục 3.2; môi trường thu (Mosquitto, tcpdump, Scapy): mục 3.3; 3 kiểu tấn công, MQTT không xác thực, đổi thời gian chờ khi có chặn gói: mục 4.1; lịch tấn công theo ngày: mục 5; tổng số gói, flow 30 s, node có card mạng thứ hai: mục 5.1; Table 1 (thống kê dữ liệu thật): mục 3.2; Table 5: mục 5.1 |
 | [2] | Repo dữ liệu gốc: https://github.com/dad-repository/dad | file dữ liệu, README lịch tấn công | `README.md` |
-| [3] | L. Vigoya, D. Fernandez, V. Carneiro, F. J. Nóvoa, *IoT Dataset Validation Using Machine Learning Techniques for Traffic Anomaly Detection*, Electronics 2021, 10(22), 2857. https://doi.org/10.3390/electronics10222857 (PDF: https://mdpi-res.com/d_attachment/electronics/electronics-10-02857/article_deploy/electronics-10-02857.pdf) | 12 đặc trưng, cách chia dữ liệu, accuracy 0,9998 | 12 đặc trưng chọn bằng RFE: mục 5; stratified 5-fold lồng nhau + SMOTE: mục 5–6; accuracy 0,9998 (RF, AdaBoost): Table 6 |
-| [4] | B. Saridou, G. Bendiab, S. N. Shiaeles, B. K. Papadopoulos, *Thermal Management in Large Data Centers: Security Threats and Mitigation*, SSCC 2020, CCIS 1364, Springer. https://arxiv.org/abs/2108.13261 | tấn công vào hệ thống đo nhiệt là mối đe doạ có thật | tóm tắt (abstract) |
-| [5] | ASHRAE TC 9.9, *2021 Equipment Thermal Guidelines for Data Processing Environments*, Reference Card (5th ed.). https://www.ashrae.org/file%20library/technical%20resources/bookstore/supplemental%20files/therm-gdlns-5th-r-e-refcard.pdf | vùng khuyến nghị 18–27 °C; cho phép A1 15–32 °C; biến thiên ≤ 5 °C/15 phút, ≤ 20 °C/giờ | Table 2.1 và chú thích f |
-| [6] | M. K. Herrlin, *Data Center Air Management Research*, PG&E Emerging Technologies, Application Assessment Report #0912, 2010. https://datacenters.lbl.gov/sites/default/files/AirManagement_Herrlin2010.pdf | công thức RCI_HI, RCI_LO; thang: 100% lý tưởng, ~95% tốt, < 90% kém | trang 8/53 |
-| [7] | K. VanCamp (Emerson), *Alarm Management By the Numbers*, Chemical Engineering, 3/2016 (bản in lại). https://www.emerson.com/is/content/emerson/en/corporate/news-and-events/articles/documents/alarm-management-by-the-numbers.pdf | chỉ tiêu cảnh báo theo EEMUA-191 / ISA-18.2 / IEC 62682: < 288 cảnh báo/ngày, 1–2 cảnh báo/10 phút, lụt = hơn 10 cảnh báo mới trong 10 phút | Table 1; đoạn định nghĩa alarm flood |
-| [8] | Google, *Site Reliability Engineering*, chương *Monitoring Distributed Systems*. https://sre.google/sre-book/monitoring-distributed-systems/ | 4 tín hiệu vàng: latency, traffic, errors, saturation | mục *The Four Golden Signals* |
-| [9] | I. Seaton, *The 4 Delta T's of Data Center Cooling: What You're Missing*, Upsite Technologies, 24/6/2015. https://www.upsite.com/blog/the-4-delta-ts-of-data-center-cooling-what-youre-missing | ΔT của tủ làm mát = chênh lệch khí cấp và khí hồi | đoạn "cooling unit ΔT" |
-| [10] | N. Kroman, *Data Centers and Correct ΔT Control*, FlowCon International, 4/2025. https://flowcon.com/articles/data-centers-and-correct-dt-control | ΔT nước = chênh lệch nước cấp và nước hồi; "low ΔT syndrome" | đoạn định nghĩa ΔT |
-| [11] | Exaflop LLC (Google), bằng sáng chế US8209993B2 *Warm water cooling*. https://patents.google.com/patent/US8209993B2/en | approach = nhiệt độ khí ra khỏi dàn trừ nhiệt độ nước vào dàn | phần mô tả (description) |
-| [12] | Litmus, *How to Measure Industrial Data Quality: SLOs for Latency, Completeness and Freshness*. https://litmus.io/blog/how-to-measure-industrial-data-quality-slos-for-latency-completeness-and-freshness | định nghĩa độ tươi (freshness), độ đầy đủ (completeness), độ trễ (latency) | các mục định nghĩa |
-| [13] | Wireshark, *Display Filter Reference: MQTT*. https://www.wireshark.org/docs/dfref/m/mqtt.html | tên trường lọc MQTT | toàn trang |
+| [3] | B. Saridou, G. Bendiab, S. N. Shiaeles, B. K. Papadopoulos, *Thermal Management in Large Data Centers: Security Threats and Mitigation*, SSCC 2020, CCIS 1364, Springer. https://arxiv.org/abs/2108.13261 | tấn công vào hệ thống đo nhiệt là mối đe doạ có thật | tóm tắt (abstract) |
+| [4] | ASHRAE TC 9.9, *2021 Equipment Thermal Guidelines for Data Processing Environments*, Reference Card (5th ed.). https://www.ashrae.org/file%20library/technical%20resources/bookstore/supplemental%20files/therm-gdlns-5th-r-e-refcard.pdf | vùng khuyến nghị 18–27 °C; cho phép A1 15–32 °C; biến thiên ≤ 5 °C/15 phút, ≤ 20 °C/giờ | Table 2.1 và chú thích f |
+| [5] | M. K. Herrlin, *Data Center Air Management Research*, PG&E Emerging Technologies, Application Assessment Report #0912, 2010. https://datacenters.lbl.gov/sites/default/files/AirManagement_Herrlin2010.pdf | công thức RCI_HI, RCI_LO; thang: 100% lý tưởng, ~95% tốt, < 90% kém | trang 8/53 |
+| [6] | K. VanCamp (Emerson), *Alarm Management By the Numbers*, Chemical Engineering, 3/2016 (bản in lại). https://www.emerson.com/is/content/emerson/en/corporate/news-and-events/articles/documents/alarm-management-by-the-numbers.pdf | chỉ tiêu cảnh báo theo EEMUA-191 / ISA-18.2 / IEC 62682: < 288 cảnh báo/ngày, 1–2 cảnh báo/10 phút, lụt = hơn 10 cảnh báo mới trong 10 phút | Table 1; đoạn định nghĩa alarm flood |
+| [7] | Google, *Site Reliability Engineering*, chương *Monitoring Distributed Systems*. https://sre.google/sre-book/monitoring-distributed-systems/ | 4 tín hiệu vàng: latency, traffic, errors, saturation | mục *The Four Golden Signals* |
+| [8] | I. Seaton, *The 4 Delta T's of Data Center Cooling: What You're Missing*, Upsite Technologies, 24/6/2015. https://www.upsite.com/blog/the-4-delta-ts-of-data-center-cooling-what-youre-missing | ΔT của tủ làm mát = chênh lệch khí cấp và khí hồi | đoạn "cooling unit ΔT" |
+| [9] | N. Kroman, *Data Centers and Correct ΔT Control*, FlowCon International, 4/2025. https://flowcon.com/articles/data-centers-and-correct-dt-control | ΔT nước = chênh lệch nước cấp và nước hồi; "low ΔT syndrome" | đoạn định nghĩa ΔT |
+| [10] | Exaflop LLC (Google), bằng sáng chế US8209993B2 *Warm water cooling*. https://patents.google.com/patent/US8209993B2/en | approach = nhiệt độ khí ra khỏi dàn trừ nhiệt độ nước vào dàn | phần mô tả (description) |
+| [11] | Litmus, *How to Measure Industrial Data Quality: SLOs for Latency, Completeness and Freshness*. https://litmus.io/blog/how-to-measure-industrial-data-quality-slos-for-latency-completeness-and-freshness | định nghĩa độ tươi (freshness), độ đầy đủ (completeness), độ trễ (latency) | các mục định nghĩa |
+| [12] | Wireshark, *Display Filter Reference: MQTT*. https://www.wireshark.org/docs/dfref/m/mqtt.html | tên trường lọc MQTT | toàn trang |
 
-Những gì **không** có trong nguồn mà là kết luận của dự án (tính từ dữ liệu trong notebook): mọi ngưỡng phát hiện (1,5 P; 0,8 P; 3/6 chu kỳ; 0,8 °C), danh mục tín hiệu E.2, ánh xạ chữ số cuối `clientId` → loại cảm biến, phát hiện "node tự ngắt kết nối" đêm thứ Năm, và các "dấu vết của bộ sinh dữ liệu" ở D.6.
+Những gì **không** có trong nguồn mà là kết luận của dự án (tính từ dữ liệu trong notebook): mọi ngưỡng phát hiện (1,5 P; 0,8 P; 3/6 chu kỳ; 0,8 °C), danh mục tín hiệu mục “Danh mục tín hiệu”, ánh xạ chữ số cuối `clientId` → loại cảm biến, phát hiện "node tự ngắt kết nối" đêm thứ Năm, và các đặc điểm dễ gây hiểu nhầm ở mục “Trông như bất thường nhưng không phải”.

@@ -7,7 +7,7 @@ with IoT Sensors, Sensors 2020, 20(13), 3745. https://pmc.ncbi.nlm.nih.gov/artic
 """
 from __future__ import annotations
 
-# Tên đầy đủ theo bài báo (mục 3.1); chữ số vị trí trong clientId suy ra từ giá trị đo (notebook BAO_CAO_PHAN_TICH_DAD, mục B.6)
+# Tên đầy đủ theo bài báo (mục 3.1); chữ số vị trí trong clientId suy ra từ giá trị đo (notebook BAO_CAO_PHAN_TICH_DAD, mục “Từ điển định danh”)
 SENSOR_INFO = {
     "TFEU": ("Unit Entering Fluid Temperature", "nước lạnh đi vào tủ", 1),
     "TFSU": ("Unit Leaving Fluid Temperature", "nước đi ra khỏi tủ", 2),

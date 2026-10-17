@@ -24,6 +24,14 @@ DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
 DAY_RE = re.compile(r"capture_(\d{10})_(\w{3})\.pcap$")
 
 
+def dad_files(raw_dir: str, pattern: str) -> list[str]:
+    """Tìm file trong raw_dir và mọi thư mục con (binh_thuong/, bat_thuong/), sắp theo TÊN file, tức theo ngày.
+
+    Không sắp theo đường dẫn đầy đủ: khi file nằm ở nhiều thư mục, thứ tự đường dẫn không còn là thứ tự ngày.
+    """
+    return sorted(glob.glob(os.path.join(raw_dir, "**", pattern), recursive=True), key=os.path.basename)
+
+
 def _mqtt_layers(pkt):
     """Mọi bản tin MQTT trong một segment TCP (một segment có thể chứa nhiều bản tin)."""
     out, i = [], 1
@@ -76,7 +84,7 @@ def parse_pcap(path: str, conn_map: dict | None = None) -> tuple[pd.DataFrame, p
 
 def load_labels(raw_dir: str) -> pd.DataFrame:
     """Đọc 7 file CSV nhãn, gắn tên ngày theo thứ tự thời gian."""
-    files = sorted(glob.glob(os.path.join(raw_dir, "capture_*_labels.csv")))
+    files = dad_files(raw_dir, "capture_*_labels.csv")
     frames = []
     for day, f in zip(DAYS, files):
         d = pd.read_csv(f, sep=";")
@@ -96,7 +104,7 @@ def load_all(raw_dir: str, cache_dir: str | None = None) -> tuple[pd.DataFrame, 
         if os.path.exists(pk_c) and os.path.exists(pub_c):
             return _finish(pd.read_csv(pk_c), pd.read_csv(pub_c, dtype={"client_id": str}))
     pk_all, pub_all, conn_map = [], [], {}
-    files = sorted(glob.glob(os.path.join(raw_dir, "capture_*.pcap")),
+    files = sorted(dad_files(raw_dir, "capture_*.pcap"),
                    key=lambda x: DAYS.index(DAY_RE.search(x).group(2)))
     for f in files:
         pk, pub = parse_pcap(f, conn_map)

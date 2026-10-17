@@ -6,12 +6,12 @@ Phân tích bộ dữ liệu **DAD** (16 cảm biến nhiệt độ của 4 tủ
 
 | File | Nội dung |
 |---|---|
-| [`notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb`](notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb) | **Báo cáo chính.** A bài toán và bài báo gốc · B giải phẫu file gốc · C hành vi bình thường · D bất thường · E đúc kết nghiệp vụ giám sát · F bộ metrics tối thiểu · G giới hạn, dàn ý slide, kiểm chứng tự động, nguồn. Mọi con số tính lại từ file gốc và được kiểm tự động; mỗi thông số lấy từ tài liệu ngoài có ghi nguồn (mục, bảng, trang) |
+| [`notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb`](notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb) | **Báo cáo chính.** Bài toán và bài báo gốc · giải phẫu file gốc · hành vi bình thường · bất thường · đúc kết nghiệp vụ giám sát · bộ metrics tối thiểu · nguồn tham khảo. Mọi con số tính lại từ file gốc; mỗi thông số lấy từ tài liệu ngoài có ghi nguồn (mục, bảng, trang) |
 | [`KIEM_CHUNG_DU_LIEU_GOC.md`](KIEM_CHUNG_DU_LIEU_GOC.md) | Tự kiểm trên dữ liệu gốc: từng file của dataset là gì, cách mở bằng Wireshark và trình soạn thảo, các bản ghi cụ thể (tên file, số frame, nguyên văn dòng CSV) cho từng phát hiện |
 | `notebooks/figures/khung/` | hình đã xuất cho slide |
 | `notebooks/figures/paper/` | hình trích từ bài báo gốc (CC BY 4.0) |
 
-Dữ liệu gốc (7 file `.pcap` + 7 file nhãn `.csv`/`.xml`) nằm ở thư mục gốc của repo `dad`; notebook đọc thẳng từ đó.
+Dữ liệu gốc (7 file `.pcap` + 7 file nhãn `.csv`/`.xml`) nằm trong thư mục `data/` của repo `dad`, chia theo ngày: `data/binh_thuong/` (thứ Hai, Chủ nhật: không có tấn công) và `data/bat_thuong/` (thứ Ba đến thứ Bảy: có ít nhất một đợt tấn công vào InRow 13; các tủ khác và các giờ khác vẫn bình thường). Notebook đọc thẳng từ đó.
 
 ## Chạy lại
 
@@ -25,8 +25,8 @@ Lần đầu đọc PCAP mất khoảng 1 phút, sau đó dùng cache trong `dat
 
 Xem nhanh một gói tin trong dữ liệu gốc (chạy ở thư mục gốc repo `dad`):
 ```bash
-python monitoring/src/xem_frame.py capture_1910230000_wed.pcap 2707     # in frame kèm dòng nhãn CSV
-wireshark -r capture_1910230000_wed.pcap -g 2707 -t ud &                # mở bằng Wireshark, giờ UTC
+python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap 2707     # in frame kèm dòng nhãn CSV
+wireshark -r data/bat_thuong/capture_1910230000_wed.pcap -g 2707 -t ud &                # mở bằng Wireshark, giờ UTC
 ```
 
 ## Cấu trúc

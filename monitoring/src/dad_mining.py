@@ -5,14 +5,13 @@ Gồm: đọc tầng mạng (TCP/UDP/MQTT) từ PCAP, dựng bảng chuỗi theo
 """
 from __future__ import annotations
 
-import glob
 import os
 import re
 
 import numpy as np
 import pandas as pd
 
-from dad_loader import DAYS, DAY_RE
+from dad_loader import DAYS, DAY_RE, dad_files
 
 PERIOD_S = 300.1          # chu kỳ gửi chuẩn đo được
 SILENCE_FACTOR = 1.5      # D1: im lặng quá 1,5 chu kỳ
@@ -30,7 +29,7 @@ def parse_network(raw_dir: str, cache: str | None = None) -> pd.DataFrame:
     from scapy.contrib.mqtt import MQTT, MQTTConnect, MQTTPuback, MQTTPublish
 
     rows = []
-    files = sorted(glob.glob(os.path.join(raw_dir, "capture_*.pcap")),
+    files = sorted(dad_files(raw_dir, "capture_*.pcap"),
                    key=lambda x: DAYS.index(DAY_RE.search(x).group(2)))
     for f in files:
         day = DAY_RE.search(os.path.basename(f)).group(2)

@@ -4,9 +4,9 @@ Dùng để tự kiểm chứng một bản ghi được nhắc trong báo cáo,
 (đọc thẳng file PCAP bằng scapy và đọc thẳng dòng thứ frame + 1 của file CSV).
 
 Chạy từ thư mục gốc repo `dad`:
-    python monitoring/src/xem_frame.py capture_1910230000_wed.pcap 2707
-    python monitoring/src/xem_frame.py capture_1910230000_wed.pcap 2705 2706 2707 2708
-    python monitoring/src/xem_frame.py capture_1910230000_wed.pcap --tu 2700 --den 2712
+    python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap 2707
+    python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap 2705 2706 2707 2708
+    python monitoring/src/xem_frame.py data/bat_thuong/capture_1910230000_wed.pcap --tu 2700 --den 2712
 """
 from __future__ import annotations
 
