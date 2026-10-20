@@ -1,0 +1,328 @@
+{
+  "mat_ban_tin": {
+    "_id": "inrow13-20191021T222233Z-mat_ban_tin",
+    "inrow": 13,
+    "kinds": [
+      "mat_ban_tin"
+    ],
+    "rules": [
+      "D1"
+    ],
+    "status": "resolved",
+    "detected_at": {
+      "$date": "2019-10-21T22:22:33.225Z"
+    },
+    "detected_us": 1571696553225044,
+    "last_alarm_at": {
+      "$date": "2019-10-21T22:22:33.225Z"
+    },
+    "last_alarm_us": 1571696553225988,
+    "n_alarms": 4,
+    "evidence": {
+      "sensors": 4,
+      "ban_tin_mat": 8,
+      "ban_tin_den_som": 0,
+      "slot_lech_am": 0,
+      "muc_tru_C": 0
+    },
+    "src_frames": [
+      {
+        "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+        "frame": 488
+      },
+      {
+        "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+        "frame": 485
+      },
+      {
+        "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+        "frame": 479
+      },
+      {
+        "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+        "frame": 481
+      }
+    ]
+  },
+  "sua_gia_tri": {
+    "_id": "inrow13-20191023T022500Z-sua_gia_tri",
+    "inrow": 13,
+    "kinds": [
+      "sua_gia_tri"
+    ],
+    "rules": [
+      "D4"
+    ],
+    "status": "resolved",
+    "detected_at": {
+      "$date": "2019-10-23T02:25:00.000Z"
+    },
+    "detected_us": 1571797500000000,
+    "last_alarm_at": {
+      "$date": "2019-10-23T04:10:00.000Z"
+    },
+    "last_alarm_us": 1571803800000000,
+    "n_alarms": 22,
+    "evidence": {
+      "sensors": 4,
+      "ban_tin_mat": 0,
+      "ban_tin_den_som": 0,
+      "slot_lech_am": 17,
+      "muc_tru_C": 2
+    },
+    "src_frames": [
+      {
+        "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+        "frame": 2708
+      },
+      {
+        "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+        "frame": 2711
+      },
+      {
+        "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+        "frame": 2707
+      },
+      {
+        "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+        "frame": 2716
+      }
+    ]
+  },
+  "chen_ban_tin": {
+    "_id": "inrow13-20191024T010637Z-chen_ban_tin",
+    "inrow": 13,
+    "kinds": [
+      "chen_ban_tin",
+      "sua_gia_tri"
+    ],
+    "rules": [
+      "D2",
+      "D4"
+    ],
+    "status": "resolved",
+    "detected_at": {
+      "$date": "2019-10-24T01:06:37.217Z"
+    },
+    "detected_us": 1571879197217399,
+    "last_alarm_at": {
+      "$date": "2019-10-24T01:40:00.000Z"
+    },
+    "last_alarm_us": 1571881200000000,
+    "n_alarms": 61,
+    "evidence": {
+      "sensors": 4,
+      "ban_tin_mat": 0,
+      "ban_tin_den_som": 56,
+      "slot_lech_am": 4,
+      "muc_tru_C": 2
+    },
+    "src_frames": [
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2102
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2116
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2121
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2172
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2181
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2197
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2248
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2259
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2268
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2281
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2292
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2341
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2354
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2367
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2099
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2109
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2122
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2170
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2182
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2196
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2243
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2256
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2271
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2280
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2294
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2342
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2353
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2369
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2095
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2107
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2124
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2173
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2183
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2198
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2246
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2260
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2267
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2283
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2291
+      },
+      {
+        "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+        "frame": 2339
+      }
+    ]
+  },
+  "node_ngat_ket_noi": {
+    "_id": "inrow13-20191024T211126Z-mat_ban_tin",
+    "inrow": 13,
+    "kinds": [
+      "mat_ban_tin"
+    ],
+    "rules": [
+      "D1"
+    ],
+    "status": "resolved",
+    "detected_at": {
+      "$date": "2019-10-24T21:11:26.674Z"
+    },
+    "detected_us": 1571951486674047,
+    "last_alarm_at": {
+      "$date": "2019-10-24T21:11:26.674Z"
+    },
+    "last_alarm_us": 1571951486674292,
+    "n_alarms": 4,
+    "evidence": {
+      "sensors": 4,
+      "ban_tin_mat": 40,
+      "ban_tin_den_som": 0,
+      "slot_lech_am": 0,
+      "muc_tru_C": 0
+    },
+    "src_frames": [
+      {
+        "file": "data/bat_thuong/capture_1910250000_fri.pcap",
+        "frame": 161
+      },
+      {
+        "file": "data/bat_thuong/capture_1910250000_fri.pcap",
+        "frame": 167
+      },
+      {
+        "file": "data/bat_thuong/capture_1910250000_fri.pcap",
+        "frame": 173
+      },
+      {
+        "file": "data/bat_thuong/capture_1910250000_fri.pcap",
+        "frame": 179
+      }
+    ]
+  }
+}

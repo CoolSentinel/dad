@@ -4,3 +4,7 @@ data/processed/*
 __pycache__/
 .ipynb_checkpoints/
 .venv/
+
+# Đầu ra chạy thử / kiểm tra (sinh lại được)
+data/datadog_out/
+data/kiem_tra_ket_qua.json

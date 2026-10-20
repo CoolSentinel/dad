@@ -8,6 +8,7 @@ Phân tích bộ dữ liệu **DAD** (16 cảm biến nhiệt độ của 4 tủ
 |---|---|
 | [`notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb`](notebooks/BAO_CAO_PHAN_TICH_DAD.ipynb) | **Báo cáo chính.** Bài toán và bài báo gốc · giải phẫu file gốc · hành vi bình thường · bất thường · đúc kết nghiệp vụ giám sát · bộ metrics tối thiểu · nguồn tham khảo. Mọi con số tính lại từ file gốc; mỗi thông số lấy từ tài liệu ngoài có ghi nguồn (mục, bảng, trang) |
 | [`KIEM_CHUNG_DU_LIEU_GOC.md`](KIEM_CHUNG_DU_LIEU_GOC.md) | Tự kiểm trên dữ liệu gốc: từng file của dataset là gì, cách mở bằng Wireshark và trình soạn thảo, các bản ghi cụ thể (tên file, số frame, nguyên văn dòng CSV) cho từng phát hiện |
+| [`DATA_MODEL.md`](DATA_MODEL.md) | Mô hình dữ liệu MongoDB (`telemetry`, `latest`, `incidents`) và metric Datadog; cách xuất, nạp, đẩy và **kiểm tra khớp tuyệt đối** với file gốc |
 | `notebooks/figures/khung/` | hình đã xuất cho slide |
 | `notebooks/figures/paper/` | hình trích từ bài báo gốc (CC BY 4.0) |
 
@@ -36,6 +37,11 @@ src/dad_loader.py    đọc PCAP (scapy), ghép nhãn CSV, tạo bảng bản ti
 src/dad_mining.py    tầng mạng/MQTT, baseline, ground truth, quy tắc phát hiện D1/D2/D4, chấm theo sự cố
 src/dad_paper.py     số liệu lấy từ bài báo gốc (Table 1), đã đối chiếu
 src/xem_frame.py     in nội dung một frame PCAP kèm dòng nhãn, để tự kiểm chứng
+src/xuat_mongo.py    data/*.pcap -> data/mongo/ (telemetry, latest, incidents)
+src/nap_mongo.py     nạp data/mongo/ vào MongoDB tự host
+src/day_datadog.py   MongoDB -> Datadog (phát lại, có sổ gửi)
+src/kiem_tra_du_lieu.py  kiểm tra PCAP ⇄ CSV ⇄ MongoDB ⇄ Datadog bằng bộ giải mã PCAP viết tay
+src/tao_mau_du_lieu.py   sinh object mẫu cho DATA_MODEL.md
 notebooks/           báo cáo và hình
 data/processed/      cache, không commit
 ```

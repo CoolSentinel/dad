@@ -1,0 +1,56 @@
+{
+  "binh_thuong_InRow15_TAS": {
+    "ts": {
+      "$date": "2019-10-20T22:10:02.753Z"
+    },
+    "ts_us": 1571609402753929,
+    "meta": {
+      "inrow": 15,
+      "sensor": "TAS",
+      "clientId": "153"
+    },
+    "value": 20.27,
+    "seq": 3,
+    "conn": "10.6.56.36:47592",
+    "src": {
+      "file": "data/binh_thuong/capture_1910210000_mon.pcap",
+      "frame": 217
+    }
+  },
+  "sua_gia_tri_InRow13_TAS_0410": {
+    "ts": {
+      "$date": "2019-10-23T02:10:07.155Z"
+    },
+    "ts_us": 1571796607155520,
+    "meta": {
+      "inrow": 13,
+      "sensor": "TAS",
+      "clientId": "133"
+    },
+    "value": 18.02,
+    "seq": 51,
+    "conn": "10.6.56.41:49152",
+    "src": {
+      "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+      "frame": 2707
+    }
+  },
+  "chen_ban_tin_InRow13_TFEU_030637": {
+    "ts": {
+      "$date": "2019-10-24T01:06:37.218Z"
+    },
+    "ts_us": 1571879197218412,
+    "meta": {
+      "inrow": 13,
+      "sensor": "TFEU",
+      "clientId": "131"
+    },
+    "value": 9.08,
+    "seq": 39,
+    "conn": "10.6.56.41:49158",
+    "src": {
+      "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+      "frame": 2102
+    }
+  }
+}

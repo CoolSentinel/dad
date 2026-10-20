@@ -1,0 +1,68 @@
+{
+  "binh_thuong": {
+    "_id": "153",
+    "inrow": 15,
+    "sensor": "TAS",
+    "ts": {
+      "$date": "2019-10-20T22:10:02.753Z"
+    },
+    "ts_us": 1571609402753929,
+    "value": 20.27,
+    "seq": 3,
+    "conn": "10.6.56.36:47592",
+    "gap_s": 300.101986,
+    "gap_P": 1.0,
+    "src": {
+      "file": "data/binh_thuong/capture_1910210000_mon.pcap",
+      "frame": 217
+    },
+    "prev_src": {
+      "file": "data/binh_thuong/capture_1910210000_mon.pcap",
+      "frame": 165
+    }
+  },
+  "sau_khoang_ho_chan_goi": {
+    "_id": "131",
+    "inrow": 13,
+    "sensor": "TFEU",
+    "ts": {
+      "$date": "2019-10-21T22:30:03.178Z"
+    },
+    "ts_us": 1571697003178130,
+    "value": 12.0,
+    "seq": 5,
+    "conn": "10.6.56.41:49146",
+    "gap_s": 900.102142,
+    "gap_P": 2.9993,
+    "src": {
+      "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+      "frame": 488
+    },
+    "prev_src": {
+      "file": "data/bat_thuong/capture_1910220000_tue.pcap",
+      "frame": 386
+    }
+  },
+  "ban_tin_den_som": {
+    "_id": "131",
+    "inrow": 13,
+    "sensor": "TFEU",
+    "ts": {
+      "$date": "2019-10-24T01:06:37.218Z"
+    },
+    "ts_us": 1571879197218412,
+    "value": 9.08,
+    "seq": 39,
+    "conn": "10.6.56.41:49158",
+    "gap_s": 91.101102,
+    "gap_P": 0.3036,
+    "src": {
+      "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+      "frame": 2102
+    },
+    "prev_src": {
+      "file": "data/bat_thuong/capture_1910240000_thu.pcap",
+      "frame": 2059
+    }
+  }
+}

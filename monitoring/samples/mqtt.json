@@ -1,0 +1,35 @@
+{
+  "goc_trong_pcap": {
+    "topic": "IoT",
+    "payload": "18.02",
+    "qos": 1,
+    "msgid": 51,
+    "ip_nguon": "10.6.56.41",
+    "cong_nguon": 49152,
+    "ts_us": 1571796607155520,
+    "_nguon": {
+      "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+      "frame": 2707
+    },
+    "_dong_csv": "2707;10.6.56.41;49152;133;51;1",
+    "_connect": {
+      "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+      "frame": 105,
+      "clientId": "133",
+      "keepalive": 300
+    }
+  },
+  "khi_phat_lai": {
+    "topic": "dc/citic/inrow13/TAS",
+    "payload": {
+      "value": 18.02,
+      "seq": 51,
+      "ts": "2019-10-23T02:10:07.155Z"
+    },
+    "qos": 1,
+    "_nguon": {
+      "file": "data/bat_thuong/capture_1910230000_wed.pcap",
+      "frame": 2707
+    }
+  }
+}

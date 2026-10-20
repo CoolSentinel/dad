@@ -1,0 +1,20 @@
+{
+  "source": "data/*.pcap (DAD, Vigoya et al., Sensors 2020)",
+  "collections": {
+    "telemetry": {
+      "file": "telemetry.ndjson.gz",
+      "documents": 32288,
+      "sha256_ndjson": "34e82dd7cbda604d07eefcea046d000c500ea85cbcf1481ceda27a79d533582e"
+    },
+    "latest": {
+      "file": "latest.ndjson.gz",
+      "documents": 16,
+      "sha256_ndjson": "1d8b2685756db6156dd38e62008571e4abb9b605f8866acddbd3d00702319d91"
+    },
+    "incidents": {
+      "file": "incidents.ndjson.gz",
+      "documents": 18,
+      "sha256_ndjson": "b232631c1680a2f08840813bc9c4a3e8bffecf3333c211df1a1901fd8eddf50c"
+    }
+  }
+}
